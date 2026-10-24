@@ -234,6 +234,26 @@
   /* Four tabs */
   .tabs.four { grid-template-columns:repeat(4, minmax(0,1fr)); }
   .tabs.four button { font-size:10px; letter-spacing:.12em; padding:11px 2px; }
+  .tabs.five { grid-template-columns:repeat(5, minmax(0,1fr)); }
+  .tabs.five button { font-size:9.5px; letter-spacing:.08em; padding:11px 1px; }
+
+  /* Tools tab (Telegram bot) */
+  .tbox { display:flex; gap:8px; align-items:flex-start; }
+  .tbox textarea { flex:1; min-width:0; min-height:48px; max-height:220px; padding:12px 13px; font:inherit; font-size:14px; line-height:1.45; color:var(--ink);
+                   background:var(--surface); border:1px solid var(--box); border-radius:12px; resize:none; }
+  .tbox textarea:focus { outline:none; border-color:var(--sage); }
+  .tbox .btn { width:auto; margin:0; min-height:48px; padding:0 18px; }
+  .tchips { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 16px; }
+  .tres { background:var(--surface); border:1px solid var(--box); border-radius:12px; padding:12px; margin-bottom:12px; }
+  .tres img { width:100%; border-radius:8px; display:block; }
+  .tres .cap { font-size:12px; color:var(--muted); margin:8px 0 10px; }
+  .tres pre { margin:0; white-space:pre-wrap; word-break:break-word; font:inherit; font-size:13px; line-height:1.55; }
+  .tres .two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .tres .two .btn { margin:0; min-height:40px; font-size:11px; }
+  .tpdf { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .tpdf .ic { flex:none; width:42px; height:52px; border:1px solid var(--box); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--sage); letter-spacing:.1em; }
+  .tpdf .nm { word-break:break-all; }
+  .tunits { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   /* Call-backs, warning, history */
   .sect { font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:#E3B66B; margin:4px 0 6px; }
   .sect.sage { color:var(--sage); margin-top:14px; }
@@ -357,7 +377,7 @@
     <div class="sub"><span><b id="sFollow">–</b> follow-ups due</span><span><b id="sNew">–</b> units left</span></div>
   </div>
 
-  <div class="tabs four"><button id="tOne" class="on" onclick="tab('one')">List</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tList" onclick="tab('list')">Filters</button><button id="tRes" onclick="tab('res')">Results</button></div>
+  <div class="tabs five"><button id="tOne" class="on" onclick="tab('one')">List</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tList" onclick="tab('list')">Filters</button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tRes" onclick="tab('res')">Results</button></div>
 
   <div id="main"><div class="state">Loading…</div></div>
   <div id="listView" style="display:none">
@@ -387,6 +407,12 @@
 
   <div id="pipeView" style="display:none"></div>
   <div id="resView" style="display:none"></div>
+  <div id="toolsView" style="display:none">
+    <div class="eye" style="margin-bottom:8px">Bot Tools</div>
+    <div class="tbox"><textarea id="tq" rows="1" placeholder="e.g. palmiera 1 17" oninput="tGrow()" onkeydown="tKey(event)"></textarea><button class="btn btn-solid" id="tRun" onclick="runTool()">Run</button></div>
+    <div class="tchips" id="tChips"></div>
+    <div id="tOut"></div>
+  </div>
 
   <div class="toast" id="toast"></div>
   <label class="opt" id="deskWrap"><input type="checkbox" id="desktop"> Open in WhatsApp Desktop app</label>
@@ -874,7 +900,8 @@
         '<button class="btn btn-line' + (g.rp ? ' replied' : '') + '" onclick="act(\'' + id + '\',\'reply\')">' + (g.rp ? '✓ Replied' : 'Mark Replied') + '</button>' +
         (g.p ? '<button class="btn btn-line" onclick="act(\'' + id + '\',\'invalid\')">Not on WhatsApp</button>' : '<button class="btn btn-line" disabled>No WhatsApp</button>') +
       '</div>' +
-      '<button class="btn btn-line" style="margin:0 0 10px" onclick="act(\'' + id + '\',\'val\')">Valuation Report</button>' +
+      '<div class="tool-row"><button class="btn btn-line" onclick="act(\'' + id + '\',\'val\')">Valuation Report</button>' +
+        '<button class="btn btn-line" onclick="act(\'' + id + '\',\'fact\')">Fact Sheet</button></div>' +
       '<div id="val_' + id + '"></div>' +
       '<div class="note-row"><textarea class="note" id="note_' + id + '" placeholder="Note (saved in Listing/Notes)">' + esc(g.rows[0].nt || '') + '</textarea>' +
       '<button class="btn btn-line" onclick="act(\'' + id + '\',\'note\')">Save</button></div>' +
@@ -891,6 +918,7 @@
     else if (what === 'next') { doStage(g, STAGES[Math.min(STAGES.indexOf(g.pp) + 1, STAGES.length - 1)]); drawPipeline(); return; }
     else if (what === 'note') { doNote(g, $('note_' + id).value); return; }
     else if (what === 'val') { openValuation(g, id); return; }
+    else if (what === 'fact') { var u = unitOf(g); toolRun(u.cluster + ' ' + u.unit); return; }
     redrawRow(id);
   }
 
@@ -922,16 +950,111 @@
   }
   function skipG(id) { var g = groupById(id); if (!g) return; skips[g.key] = 1; renderOne(); toast('Skipped · ' + g.n); }
 
+  /* ---------- Tools tab: the Telegram bot, inside the app ---------- */
+  var TOOL_EX = [
+    ['Fact sheet', 'palmiera 1 17'],
+    ['Offer', 'palmiera 1 17 at 12.5m 85% paid'],
+    ['Compare', 'palmiera 1 17 vs 22'],
+    ['Shortlist', 'palmiera 1 17 and 18'],
+    ['Search', 'palace 4 beds with basement under 15M'],
+    ['Post', '/post\nWhy Buy in The Oasis\nPrivate canals, lagoons and green spaces.\n- Direct access to Sheikh Zayed Bin Hamdan'],
+    ['Help', '/help']
+  ];
+  var toolFiles = [], toolBusy = false, botT = null;
+  function drawTools() {
+    if (!$('tChips').innerHTML) $('tChips').innerHTML = TOOL_EX.map(function (c, i) {
+      return '<button class="chip2" onclick="toolEx(' + i + ')">' + c[0] + '</button>'; }).join('');
+    if (!$('tOut').innerHTML) $('tOut').innerHTML = '<div class="list-note">Type what you would send the bot, or tap an example. Posters and PDFs come back here, ready to share.</div>';
+  }
+  function tGrow() { var t = $('tq'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 220) + 'px'; }
+  function tKey(e) { if (e.key === 'Enter' && !e.shiftKey && !/^\/post/i.test($('tq').value.trim())) { e.preventDefault(); runTool(); } }
+  function toolEx(i) {
+    var ex = TOOL_EX[i][1]; $('tq').value = ex; tGrow();
+    Array.prototype.forEach.call($('tChips').children, function (b, j) { b.className = 'chip2' + (j === i ? ' on' : ''); });
+    if (ex === '/help') runTool(); else $('tq').focus();
+  }
+  function toolRun(text) { tab('tools'); $('tq').value = text; tGrow(); runTool(); }
+  function getTicket() {
+    if (botT && botT.exp - Date.now() / 1000 > 60) return Promise.resolve(botT);
+    return new Promise(function (ok, bad) {
+      google.script.run.withSuccessHandler(function (t) { t.exp = Number(String(t.ticket).split('.')[0]); botT = t; ok(t); })
+        .withFailureHandler(bad).botTicket();
+    });
+  }
+  function runTool() {
+    var text = $('tq').value.trim(); if (!text || toolBusy) return;
+    toolBusy = true; $('tRun').disabled = true; $('tRun').textContent = '…';
+    $('tOut').innerHTML = '<div class="state">Working on it… posters and PDFs can take up to a minute.</div>';
+    getTicket().then(function (t) {
+      return fetch(t.url + '/run', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ text: text, ticket: t.ticket }) })
+        .then(function (r) { return r.json().catch(function () { throw new Error('The bot did not answer (' + r.status + '). Is it running on Railway?'); }); });
+    }).then(function (res) {
+      if (!res.ok) { if (/expired/i.test(res.error || '')) botT = null; throw new Error(res.error || 'The bot could not do that.'); }
+      showToolItems(res.items || []);
+    }).catch(function (e) {
+      var m = String((e && e.message) || e);
+      if (/Failed to fetch|NetworkError|Load failed/i.test(m)) m = 'Can\'t reach the bot. Check it is running on Railway and its address is set (WhatsApp menu → Connect Telegram bot).';
+      $('tOut').innerHTML = state('<b>Not done</b>' + esc(m));
+    }).then(function () { toolBusy = false; $('tRun').disabled = false; $('tRun').textContent = 'Run'; });
+  }
+  function b64Blob(b64, mime) {
+    var bin = atob(b64), a = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+    return new Blob([a], { type: mime });
+  }
+  function sizeTxt(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+  function unitButtons(text) {
+    var cl = '', out = [];
+    text.split('\n').forEach(function (ln) {
+      var s = ln.trim(), m = s.match(/^•\s*Unit\s+([A-Za-z0-9-]+)/);
+      if (m && cl) out.push(cl + ' ' + m[1]);
+      else if (s && !/^•/.test(s) && s === s.toUpperCase() && /[A-Z]/.test(s) && s.length < 40) cl = s.toLowerCase();
+    });
+    return out.slice(0, 30);
+  }
+  function showToolItems(items) {
+    toolFiles.forEach(function (f) { try { URL.revokeObjectURL(f.url); } catch (e) {} });
+    toolFiles = [];
+    var h = items.map(function (it) {
+      if (it.type === 'text') {
+        var us = unitButtons(it.text);
+        return '<div class="tres"><pre>' + esc(it.text) + '</pre>' + (us.length ? '<div class="tunits">' + us.map(function (u) {
+          return '<button class="chip2" onclick="toolRun(\'' + esc(u).replace(/'/g, '') + '\')">Fact sheet · ' + esc(u.split(' ').pop()) + '</button>'; }).join('') + '</div>' : '') + '</div>';
+      }
+      var blob = b64Blob(it.b64, it.mime), i = toolFiles.length, url = URL.createObjectURL(blob);
+      toolFiles.push({ blob: blob, url: url, name: it.name, mime: it.mime });
+      var btns = '<div class="two"><button class="btn btn-solid" onclick="toolShare(' + i + ')">Share</button><button class="btn btn-line" onclick="toolSave(' + i + ')">Download</button></div>';
+      if (/^image\//.test(it.mime)) return '<div class="tres"><img src="' + url + '" alt=""><div class="cap">' + esc(it.caption || it.name) + '</div>' + btns + '</div>';
+      return '<div class="tres"><div class="tpdf"><div class="ic">' + esc((it.name.split('.').pop() || 'FILE').toUpperCase()) + '</div><div><div class="nm">' + esc(it.name) +
+        '</div><div class="cap" style="margin:2px 0 0">' + esc(it.caption || '') + ' · ' + sizeTxt(blob.size) + '</div></div></div>' + btns + '</div>';
+    }).join('');
+    $('tOut').innerHTML = h || state('<b>No reply</b>The bot had nothing for that request.');
+  }
+  function toolSave(i) {
+    var f = toolFiles[i]; if (!f) return;
+    var a = document.createElement('a'); a.href = f.url; a.download = f.name; a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function toolShare(i) {
+    var f = toolFiles[i]; if (!f) return;
+    var file; try { file = new File([f.blob], f.name, { type: f.mime }); } catch (e) {}
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).catch(function () {});
+    } else { toolSave(i); toast('Sharing isn\'t available here, so it was downloaded.'); }
+  }
+
   /* ---------- Tabs ---------- */
   function tab(t) {
     mode = t;
     $('tOne').className = t === 'one' ? 'on' : ''; $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = t === 'res' ? 'on' : '';
-    $('tPipe').className = t === 'pipe' ? 'on' : '';
+    $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : '';
+    $('toolsView').style.display = t === 'tools' ? '' : 'none';
     $('main').style.display = t === 'one' ? '' : 'none';
     $('pipeView').style.display = t === 'pipe' ? '' : 'none';
     $('listView').style.display = t === 'list' ? '' : 'none';
     $('resView').style.display = t === 'res' ? '' : 'none';
-    $('deskWrap').style.display = (t === 'res' || isPhone) ? 'none' : '';
+    $('deskWrap').style.display = (t === 'res' || t === 'tools' || isPhone) ? 'none' : '';
+    if (t === 'tools') { drawTools(); return; }
     if (t === 'one') renderOne(); else if (t === 'list') drawList(); else if (t === 'pipe') drawPipeline(); else drawResults();
   }
 
