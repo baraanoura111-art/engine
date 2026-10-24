@@ -5,7 +5,20 @@
   var TOKEN = 'oasisToken', USER = 'oasisUser', mem = {};
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || mem[k] || ''; if (v === null) { localStorage.removeItem(k); delete mem[k]; } else { localStorage.setItem(k, v); mem[k] = v; } } catch (e) { if (v === undefined) return mem[k] || ''; if (v === null) delete mem[k]; else mem[k] = v; } }
 
-  function call(action, args) {
+  // Read-only actions are retried if the phone drops the connection (e.g. the app was switched away).
+  var READS = { getAll: 1, botTicket: 1, getValuationData: 1 }, listFailed = false;
+  function netErr(e) { return e && !e.auth && /load failed|failed to fetch|networkerror|network connection|did not respond/i.test(String(e.message || e)); }
+  function call(action, args, tries) {
+    tries = tries || 0;
+    return call1(action, args).catch(function (e) {
+      if (READS[action] && netErr(e) && tries < 2) {
+        return new Promise(function (r) { setTimeout(r, 1500 * (tries + 1)); }).then(function () { return call(action, args, tries + 1); });
+      }
+      if (netErr(e)) e = new Error('Connection dropped. Keep the app open while it loads, then tap Refresh.');
+      throw e;
+    });
+  }
+  function call1(action, args) {
     if (!window.API_URL || /PASTE/.test(window.API_URL)) return Promise.reject(new Error('The engine address is not set yet (config.js).'));
     return fetch(window.API_URL, {
       method: 'POST',
@@ -28,7 +41,8 @@
         if (name === 'withFailureHandler') return function (f) { return runner(ok, f); };
         return function () {
           var args = [].slice.call(arguments);
-          call(name, args).then(function (r) { if (ok) ok(r); }).catch(function (e) {
+          call(name, args).then(function (r) { if (name === 'getAll') listFailed = false; if (ok) ok(r); }).catch(function (e) {
+            if (name === 'getAll') listFailed = true;
             if (e.auth) showLogin(e.message);
             if (fail) fail(e);
           });
@@ -83,6 +97,11 @@
     if (store(TOKEN)) { setWho(); window.loadAll(false); }
     else showLogin('');
   };
+
+  // Coming back to the app after a dropped load: load the list again by itself.
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && listFailed && store(TOKEN) && window.loadAll) { listFailed = false; window.loadAll(false); }
+  });
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });

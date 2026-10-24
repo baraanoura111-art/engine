@@ -1,5 +1,5 @@
 /* Keeps the app shell available so it opens fast; owner data always comes live from the engine. */
-var CACHE = 'outreach-v1';
+var CACHE = 'outreach-v2';
 var SHELL = ['./', 'index.html', 'app.js', 'config.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
