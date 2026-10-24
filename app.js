@@ -39,7 +39,7 @@
   window.google = { script: { run: runner(null, null) } };
 
   /* ---------- Login ---------- */
-  var USERS = ['Baraa', 'Ghida'], chosen = store(USER) || 'Baraa';
+  var USERS = ['Engine'], chosen = 'Engine';
   function $(id) { return document.getElementById(id); }
   function showLogin(msg) {
     var box = $('login'); if (!box) return;

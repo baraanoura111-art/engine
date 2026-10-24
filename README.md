@@ -12,8 +12,8 @@ the Apps Script project bound to it is the engine (`doPost` API) that this app t
 - `manifest.webmanifest`, `sw.js`, `icons/` – app name, icon and home-screen install
 
 ## Logins
-Name + PIN, set in Apps Script → Project Settings → Script properties:
-`PIN_BARAA`, `PIN_GHIDA`. Five wrong PINs lock that name for 15 minutes.
+One login, **Engine**, with a PIN set in Apps Script → Project Settings → Script properties:
+`PIN_ENGINE` (an existing `PIN_BARAA` also works). Five wrong PINs lock it for 15 minutes.
 Logins last 30 days. To sign everyone out, delete the `TOKEN_SECRET` script property.
 
 ## Hosting
