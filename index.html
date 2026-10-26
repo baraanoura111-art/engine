@@ -258,6 +258,33 @@
   .tabs.four { grid-template-columns:repeat(4, minmax(0,1fr)); }
   .tabs.four button { font-size:10px; letter-spacing:.12em; padding:11px 2px; }
   .tabs.five { grid-template-columns:repeat(5, minmax(0,1fr)); }
+  .tabs.seven { display:flex; flex-wrap:wrap; }
+  .tabs.seven button { flex:1 1 25%; font-size:10px; letter-spacing:.1em; padding:11px 2px; white-space:nowrap; }
+  .tabs.seven button:nth-child(n+5) { flex-basis:33%; border-top:1px solid var(--box); }
+  .tcount { display:inline-block; min-width:16px; margin-left:5px; padding:0 4px; border-radius:8px; background:#C8473D; color:#fff; font-size:9px; letter-spacing:0; line-height:15px; }
+  .tcount:empty { display:none; }
+  .seg { display:flex; border:1px solid var(--box); border-radius:12px; overflow:hidden; margin-bottom:16px; }
+  .seg button { flex:1; background:transparent; border:0; color:var(--muted); font:400 10.5px var(--body); letter-spacing:.16em; text-transform:uppercase; padding:9px 4px; cursor:pointer; }
+  .seg button.on { background:var(--surface); color:var(--sage); }
+  .lead { padding:14px 2px; border-top:1px solid var(--line); }
+  .lead .ln { font-size:15px; color:var(--ink); }
+  .lead .lm { font-size:12px; color:var(--muted); margin-top:2px; }
+  .lead .ld { font-size:12.5px; color:var(--ink); opacity:.85; margin-top:6px; white-space:pre-wrap; }
+  .lead .lb { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; }
+  .lead .lb .mini { width:100%; min-width:0; height:36px; font-size:10.5px; letter-spacing:.06em; }
+  .lead .lb .mini.off { grid-column:1 / -1; }
+  #leadsView .list-note a, #docsPane .list-note a { color:var(--sage); cursor:pointer; }
+  .lead .ls { gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .lead.st-Done .ln { color:var(--muted); }
+  .new-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#C8473D; margin-right:7px; vertical-align:2px; }
+  .doc { display:flex; align-items:center; gap:12px; padding:12px 2px; border-top:1px solid var(--line); }
+  .doc .ic { flex:none; width:38px; height:46px; border:1px solid var(--box); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:9.5px; color:var(--sage); letter-spacing:.08em; }
+  .doc .dn { flex:1; min-width:0; } .doc .dn b { display:block; font-weight:400; color:var(--ink); font-size:13.5px; word-break:break-word; } .doc .dn span { font-size:11.5px; color:var(--muted); }
+  .doc .da { flex:none; display:flex; gap:6px; } .doc .da .mini { width:auto; min-width:58px; height:32px; padding:0 10px; font-size:10px; }
+  .lk { display:flex; align-items:center; gap:10px; padding:13px 2px; border-top:1px solid var(--line); }
+  .lk a.go { flex:1; min-width:0; color:var(--ink); text-decoration:none; } .lk a.go b { display:block; font-weight:400; font-size:14px; } .lk a.go span { font-size:11.5px; color:var(--muted); }
+  .lk-add { display:grid; grid-template-columns:1fr; gap:8px; margin-top:16px; }
+  .lk-add input { width:100%; padding:11px 12px; font:inherit; font-size:14px; color:var(--ink); background:var(--surface); border:1px solid var(--box); border-radius:12px; }
   .tabs.six { grid-template-columns:repeat(6, minmax(0,1fr)); }
   .tabs.six button { font-size:9px; letter-spacing:.05em; padding:11px 1px; white-space:nowrap; overflow:hidden; }
   .td-sec { margin:18px 0 4px; font-size:10.5px; letter-spacing:.3em; text-transform:uppercase; color:var(--sage); }
@@ -413,7 +440,7 @@
     <div class="sub"><span><b id="sFollow">–</b> follow-ups due</span><span><b id="sNew">–</b> units left</span></div>
   </div>
 
-  <div class="tabs six"><button id="tOne" class="on" onclick="tab('one')">List</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tList" onclick="tab('list')">Filters</button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tTodo" onclick="tab('todo')">To Do</button><button id="tRes" onclick="tab('res')">Results</button></div>
+  <div class="tabs seven"><button id="tOne" class="on" onclick="tab('one')">List</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tList" onclick="tab('list')">Filters</button><button id="tLeads" onclick="tab('leads')">Leads<span class="tcount" id="leadCount"></span></button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tTodo" onclick="tab('todo')">To Do</button><button id="tRes" onclick="tab('res')">Results</button></div>
 
   <div id="main"><div class="state">Loading…</div></div>
   <div id="listView" style="display:none">
@@ -447,11 +474,17 @@
     <div class="tbox" style="margin-bottom:6px"><textarea id="tdIn" rows="1" placeholder="Add a task (one per line)" oninput="tdGrow()" onkeydown="tdKey(event)"></textarea><button class="btn btn-solid" onclick="todoAdd()">Add</button></div>
     <div id="tdList"><div class="state">Loading…</div></div>
   </div>
+  <div id="leadsView" style="display:none"><div class="state">Loading…</div></div>
   <div id="toolsView" style="display:none">
+    <div class="seg" id="toolSeg"><button class="on" onclick="toolPane('bot')">Bot</button><button onclick="toolPane('docs')">Documents</button><button onclick="toolPane('links')">Links</button></div>
+    <div id="docsPane" style="display:none"></div>
+    <div id="linksPane" style="display:none"></div>
+    <div id="botPane">
     <div class="tchips" id="tChips" style="margin:0 0 12px"></div>
     <div class="eye" style="margin-bottom:8px">Bot Tools</div>
     <div class="tbox" style="margin-bottom:16px"><textarea id="tq" rows="1" placeholder="e.g. palmiera 1 17" onfocus="tClear()" oninput="tFilled=false;tGrow()" onkeydown="tKey(event)"></textarea><button class="btn btn-solid" id="tRun" onclick="runTool()">Run</button></div>
     <div id="tOut"></div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -712,6 +745,7 @@
         var F = d.fields;
         O = d.owners.map(function (a) { var o = {}; for (var i = 0; i < F.length; i++) o[F[i]] = a[i]; return o; });
         T = d.tpl; stats = d.stats; sheetUrl = d.sheetUrl; VIEWS = d.views; loaded = true; current = null;
+        setTimeout(function () { if (google.script.run.getLeads || true) loadLeads(true); }, 800);   // New-leads badge
         buildGroups(); buildOptions(); updateStats();
         renderOne(); drawList(); if (mode === 'res') drawResults();
         if (isRefresh) toast('✓ Refreshed: ' + G.length + ' units');
@@ -1134,16 +1168,140 @@
     $('tOne').className = t === 'one' ? 'on' : ''; $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = t === 'res' ? 'on' : '';
     $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : ''; $('tTodo').className = t === 'todo' ? 'on' : '';
     $('todoView').style.display = t === 'todo' ? '' : 'none';
+    $('tLeads').className = t === 'leads' ? 'on' : ''; $('leadsView').style.display = t === 'leads' ? '' : 'none';
     $('toolsView').style.display = t === 'tools' ? '' : 'none';
     if (t === 'tools') setTimeout(tGrow, 0);
     $('main').style.display = t === 'one' ? '' : 'none';
     $('pipeView').style.display = t === 'pipe' ? '' : 'none';
     $('listView').style.display = t === 'list' ? '' : 'none';
     $('resView').style.display = t === 'res' ? '' : 'none';
-    $('deskWrap').style.display = (t === 'res' || t === 'tools' || t === 'todo' || isPhone) ? 'none' : '';
+    $('deskWrap').style.display = (t === 'res' || t === 'tools' || t === 'todo' || t === 'leads' || isPhone) ? 'none' : '';
     if (t === 'tools') { drawTools(); return; }
     if (t === 'todo') { loadTodos(); return; }
+    if (t === 'leads') { loadLeads(); return; }
     if (t === 'one') renderOne(); else if (t === 'list') drawList(); else if (t === 'pipe') drawPipeline(); else drawResults();
+  }
+
+  /* ---------- Leads from baraanoura.com ---------- */
+  var LD = null, ldView = 'leads', ldFilter = 'New';
+  function loadLeads(quiet) {
+    if (!quiet) drawLeads();
+    google.script.run.withSuccessHandler(function (d) { LD = d; drawLeads(); leadBadge(); })
+      .withFailureHandler(function (e) { if (!LD && !quiet) $('leadsView').innerHTML = state('<b>Not loaded</b>' + esc(e.message || e)); }).getLeads();
+  }
+  function leadBadge() { var n = LD ? LD.leads.filter(function (l) { return l.st === 'New'; }).length : 0; $('leadCount').textContent = n ? n : ''; }
+  function leadMsg(l) {
+    var f = (l.name || '').trim().split(/\s+/)[0] || 'there', s = lc(l.src), why;
+    if (/buyer guide|fact sheet/.test(s)) why = 'Thanks for downloading the Oasis Buyer Guide.';
+    else if (/valoria/.test(s)) why = 'Thanks for joining the Valoria waitlist.';
+    else if (/finder|search|villa/.test(s)) why = 'Thanks for your villa search on baraanoura.com.';
+    else why = 'Thanks for reaching out through baraanoura.com.';
+    return 'Hi ' + f + ', this is Baraa, The Oasis Specialist.\n' + why + "\nHow can I help you with The Oasis?\n\nThanks,\nBaraa\n\nbaraanoura.com";
+  }
+  function drawLeads() {
+    var v = $('leadsView');
+    if (!LD) { v.innerHTML = state('Loading leads…'); return; }
+    var nNew = LD.leads.filter(function (l) { return l.st === 'New'; }).length;
+    var h = '<div class="seg"><button class="' + (ldView === 'leads' ? 'on' : '') + '" onclick="ldView=\'leads\';drawLeads()">Leads · ' + LD.leads.length + '</button>' +
+      '<button class="' + (ldView === 'subs' ? 'on' : '') + '" onclick="ldView=\'subs\';drawLeads()">Newsletter · ' + LD.subs.length + '</button></div>';
+    if (ldView === 'subs') {
+      h += LD.subs.length ? LD.subs.map(function (x) {
+        return '<div class="lead"><div class="ln">' + esc(x.email) + '</div><div class="lm">' + esc([dfmt(x.date), x.src].filter(Boolean).join(' · ')) + '</div>' +
+          '<div class="lb" style="grid-template-columns:1fr"><a class="mini mail" href="mailto:' + esc(x.email) + '">Email</a></div></div>';
+      }).join('') : state('<b>No sign-ups yet</b>Newsletter sign-ups from baraanoura.com show here.');
+    } else {
+      h += '<div class="ls" style="margin:0 0 6px">' + ['New', 'Contacted', 'Done', 'All'].map(function (s) {
+        var n = s === 'All' ? LD.leads.length : LD.leads.filter(function (l) { return l.st === s; }).length;
+        return '<button class="chip2' + (ldFilter === s ? ' on' : '') + '" onclick="ldFilter=\'' + s + '\';drawLeads()">' + s + ' · ' + n + '</button>';
+      }).join('') + '</div>';
+      var list = LD.leads.filter(function (l) { return ldFilter === 'All' || l.st === ldFilter; });
+      h += list.length ? list.map(function (l) {
+        var i = LD.leads.indexOf(l);
+        return '<div class="lead st-' + l.st + '"><div class="ln">' + (l.st === 'New' ? '<span class="new-dot"></span>' : '') + esc(l.name || 'No name') + '</div>' +
+          '<div class="lm">' + esc([l.src, l.date ? dfmt(l.date.slice(0, 10)) + l.date.slice(10) : '', l.phone].filter(Boolean).join(' · ')) + '</div>' +
+          (l.details ? '<div class="ld">' + esc(l.details) + '</div>' : '') +
+          '<div class="lb">' + (l.wa ? '<button class="mini" onclick="leadWA(' + i + ')">WhatsApp</button><a class="mini call" href="tel:+' + esc(l.wa) + '">Call</a>'
+                                    : '<button class="mini off" disabled>No valid number</button>') + '</div>' +
+          '<div class="ls">' + ['New', 'Contacted', 'Done'].map(function (s) {
+            return '<button class="chip2' + (l.st === s ? ' on' : '') + '" onclick="leadSet(' + i + ',\'' + s + '\')">' + s + '</button>'; }).join('') + '</div></div>';
+      }).join('') : state('<b>' + (LD.leads.length ? 'Nothing here' : 'No leads yet') + '</b>' + (LD.leads.length ? 'Try another status.' : 'Name and phone entries from baraanoura.com show here.'));
+    }
+    h += '<div class="list-note"><a href="' + esc(LD.url) + '" target="_blank">Open the leads sheet ↗</a> · <a onclick="loadLeads()">Refresh</a></div>';
+    v.innerHTML = h;
+  }
+  function leadWA(i) {
+    var l = LD.leads[i]; if (!l || !l.wa) return;
+    window.open(waUrl(l.wa, leadMsg(l)), '_blank');
+    if (l.st === 'New') leadSet(i, 'Contacted');
+  }
+  function leadSet(i, st) {
+    var l = LD.leads[i]; if (!l || l.st === st) return;
+    var was = l.st; l.st = st; drawLeads(); leadBadge();
+    google.script.run.withSuccessHandler(function () {}).withFailureHandler(function (e) { l.st = was; drawLeads(); leadBadge(); toast('Not saved: ' + (e.message || e)); }).setLeadStatus(l.row, st);
+  }
+
+  /* ---------- Tools: Documents and Links ---------- */
+  function toolPane(p) {
+    [].forEach.call($('toolSeg').children, function (b, i) { b.className = ['bot', 'docs', 'links'][i] === p ? 'on' : ''; });
+    $('botPane').style.display = p === 'bot' ? '' : 'none';
+    $('docsPane').style.display = p === 'docs' ? '' : 'none';
+    $('linksPane').style.display = p === 'links' ? '' : 'none';
+    if (p === 'docs') loadDocs(); if (p === 'links') loadLinks(); if (p === 'bot') setTimeout(tGrow, 0);
+  }
+  var DOCS = null, docFiles = {};
+  function loadDocs() {
+    if (!DOCS) $('docsPane').innerHTML = state('Loading documents…');
+    google.script.run.withSuccessHandler(function (d) { DOCS = d; drawDocs(); })
+      .withFailureHandler(function (e) { $('docsPane').innerHTML = state('<b>Not loaded</b>' + esc(e.message || e)); }).getDocs();
+  }
+  function docIcon(d) { var e = (d.name.split('.').pop() || '').toUpperCase(); return /google-apps/.test(d.mime) ? 'PDF' : (e.length <= 4 ? e : 'FILE'); }
+  function drawDocs() {
+    var h = DOCS.files.length ? DOCS.files.map(function (d) {
+      var got = docFiles[d.id];
+      return '<div class="doc"><div class="ic">' + esc(docIcon(d)) + '</div><div class="dn"><b>' + esc(d.name.replace(/\.[a-z0-9]{2,4}$/i, '')) + '</b><span>' +
+        esc([d.size ? sizeTxt(d.size) : '', dfmt(d.date)].filter(Boolean).join(' · ')) + '</span></div><div class="da" id="da_' + esc(d.id) + '">' +
+        (got ? '<button class="mini" onclick="docShare(\'' + esc(d.id) + '\')">Share</button><button class="mini again" onclick="docSave(\'' + esc(d.id) + '\')">Save</button>'
+             : '<button class="mini again" onclick="docGet(\'' + esc(d.id) + '\')">Get</button>') + '</div></div>';
+    }).join('') : state('<b>No documents yet</b>Add files to the “Oasis Documents” folder in your Google Drive.');
+    $('docsPane').innerHTML = h + '<div class="list-note">Tap Get, then Share to send the actual file. <a href="' + esc(DOCS.folder) + '" target="_blank">Add files in Drive ↗</a></div>';
+  }
+  function docGet(id) {
+    var box = $('da_' + id); if (box) box.innerHTML = '<button class="mini again" disabled>Getting…</button>';
+    google.script.run.withSuccessHandler(function (f) {
+      var blob = b64Blob(f.b64, f.mime); docFiles[id] = { blob: blob, url: URL.createObjectURL(blob), name: f.name, mime: f.mime }; drawDocs();
+    }).withFailureHandler(function (e) { drawDocs(); toast(e.message || String(e)); }).getDocFile(id);
+  }
+  function docSave(id) { var f = docFiles[id]; if (!f) return; var a = document.createElement('a'); a.href = f.url; a.download = f.name; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+  function docShare(id) {
+    var f = docFiles[id]; if (!f) return;
+    var file; try { file = new File([f.blob], f.name, { type: f.mime }); } catch (e) {}
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file] }).catch(function () {});
+    else { docSave(id); toast('Sharing isn\'t available here, so it was downloaded.'); }
+  }
+  var LINKS = null;
+  function loadLinks() {
+    if (!LINKS) $('linksPane').innerHTML = state('Loading links…');
+    google.script.run.withSuccessHandler(function (l) { LINKS = l; drawLinks(); })
+      .withFailureHandler(function (e) { $('linksPane').innerHTML = state('<b>Not loaded</b>' + esc(e.message || e)); }).getLinks();
+  }
+  function hostOf(u) { return String(u).replace(/^https?:\/\/(www\.)?/i, '').split('/')[0]; }
+  function drawLinks() {
+    $('linksPane').innerHTML = (LINKS.length ? LINKS.map(function (k, i) {
+      return '<div class="lk"><a class="go" href="' + esc(k.url) + '" target="_blank" rel="noopener"><b>' + esc(k.name) + '</b><span>' + esc(hostOf(k.url)) + '</span></a>' +
+        '<button class="td-x" onclick="linkDel(' + i + ')" title="Remove">×</button></div>';
+    }).join('') : state('No links yet.')) +
+      '<div class="lk-add"><input id="lkName" placeholder="Name, e.g. Bayut Pro"><input id="lkUrl" placeholder="Web address" inputmode="url" autocapitalize="off">' +
+      '<button class="btn btn-line" style="margin-top:0" onclick="linkAdd()">Add Link</button></div>';
+  }
+  function linkAdd() {
+    var n = $('lkName').value.trim(), u = $('lkUrl').value.trim(); if (!n || !u) { toast('Add a name and a web address'); return; }
+    google.script.run.withSuccessHandler(function (l) { LINKS = l; drawLinks(); toast('Link added'); })
+      .withFailureHandler(function (e) { toast(e.message || String(e)); }).addLink(n, u);
+  }
+  function linkDel(i) {
+    var k = LINKS[i]; if (!k) return; LINKS.splice(i, 1); drawLinks();
+    google.script.run.withSuccessHandler(function (l) { LINKS = l; drawLinks(); })
+      .withFailureHandler(function (e) { loadLinks(); toast(e.message || String(e)); }).deleteLink(k.row, k.url);
   }
 
   /* ---------- To Do: tasks saved in the tracker's "To Do" tab ---------- */
