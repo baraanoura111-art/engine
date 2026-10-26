@@ -120,6 +120,19 @@
   .fgrid label.fl { display:block; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
   .fgrid select, .fgrid input { width:100%; min-width:0; padding:8px 10px; font:inherit; font-size:12.5px; color:var(--ink); background:var(--bg); border:1px solid var(--box); border-radius:12px; }
   .fgrid input:focus { outline:none; border-color:var(--sage); }
+  .ms { position:relative; }
+  .ms-btn { width:100%; min-width:0; padding:8px 26px 8px 10px; font:inherit; font-size:12.5px; color:var(--ink); background:var(--bg); border:1px solid var(--box);
+            border-radius:12px; text-align:left; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative; }
+  .ms-btn::after { content:'▾'; position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:10px; color:var(--muted); }
+  .ms-btn.on { border-color:var(--sage); color:var(--sage); }
+  .ms-list { display:none; position:absolute; z-index:20; left:0; right:0; top:calc(100% + 4px); max-height:260px; overflow:auto;
+             background:var(--surface); border:1px solid var(--box); border-radius:12px; padding:4px 0; box-shadow:0 10px 30px rgba(0,0,0,.45); min-width:170px; }
+  .ms.open .ms-list { display:block; }
+  .ms-list label { display:flex; align-items:center; gap:10px; padding:9px 12px; font-size:13px; color:var(--ink); cursor:pointer; }
+  .ms-list label:hover { background:rgba(255,255,255,.03); }
+  .ms-list input { accent-color:#AFC2AB; width:16px; height:16px; margin:0; flex:none; }
+  .ms-foot { display:flex; justify-content:space-between; border-top:1px solid var(--line); margin-top:4px; }
+  .ms-foot a { padding:10px 12px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--sage); cursor:pointer; }
   .dirs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
   .dirs label { display:block; cursor:pointer; }
   .dirs input { display:none; }
@@ -396,14 +409,14 @@
     </div>
     <div class="fpanel open" id="fpanel">
       <div class="fgrid">
-        <div><label class="fl">Cluster</label><select id="fCluster"><option value="">Any</option></select></div>
-        <div><label class="fl">Status</label><select id="fStatus"><option value="">Any</option></select></div>
-        <div><label class="fl">Bedrooms</label><select id="fBeds"><option value="">Any</option><option>4</option><option>5</option><option>6</option><option>7</option></select></div>
-        <div><label class="fl">Style</label><select id="fStyle"><option value="">Any</option></select></div>
-        <div><label class="fl">Basement</label><select id="fBase"><option value="">Any</option><option value="1">With</option><option value="0">Without</option></select></div>
+        <div><label class="fl">Cluster</label><div class="ms" id="fCluster"></div></div>
+        <div><label class="fl">Status</label><div class="ms" id="fStatus"></div></div>
+        <div><label class="fl">Bedrooms</label><div class="ms" id="fBeds"></div></div>
+        <div><label class="fl">Style</label><div class="ms" id="fStyle"></div></div>
+        <div><label class="fl">Basement</label><div class="ms" id="fBase"></div></div>
         <div><label class="fl">Min plot (sq ft)</label><input id="fPlot" inputmode="numeric" placeholder="e.g. 10,000"></div>
-        <div><label class="fl">Position</label><select id="fPos"><option value="">Any</option><option value="Mid">Mid</option><option value="Corner">Corner</option></select></div>
-        <div><label class="fl">View</label><select id="fView"><option value="">Any</option></select></div>
+        <div><label class="fl">Position</label><div class="ms" id="fPos"></div></div>
+        <div><label class="fl">View</label><div class="ms" id="fView"></div></div>
         <div class="full"><label class="fl">Compass</label><div class="dirs" id="fDirs"></div></div>
       </div>
       <div class="factions">
@@ -1110,30 +1123,61 @@
   var DIRS = ['N','NE','E','SE','S','SW','W','NW'];
   $('fDirs').innerHTML = DIRS.map(function (d) { return '<label><input type="checkbox" value="' + d + '"><span>' + d + '</span></label>'; }).join('');
   function val(id) { return $(id).value; }
+  /* Multi-select filters: tap to open a checklist, tick any number of options */
+  var MS = {};
+  function msSet(id, opts) {
+    var m = MS[id] = MS[id] || { sel: {} }; m.opts = opts.map(function (o) { return typeof o === 'string' ? { v: o, t: o } : o; });
+    msDraw(id);
+  }
+  function msVals(id) { var m = MS[id]; return m ? Object.keys(m.sel).filter(function (k) { return m.sel[k]; }) : []; }
+  function msDraw(id) {
+    var m = MS[id], el = $(id), vals = msVals(id), open = el.classList.contains('open');
+    var lab = !vals.length ? 'Any' : vals.length === 1 ? (m.opts.filter(function (o) { return o.v === vals[0]; })[0] || { t: vals[0] }).t.replace(/ \(\d+\)$/, '') : vals.length + ' selected';
+    el.innerHTML = '<button type="button" class="ms-btn' + (vals.length ? ' on' : '') + '" onclick="msToggle(\'' + id + '\')">' + esc(lab) + '</button>' +
+      '<div class="ms-list">' + m.opts.map(function (o) {
+        return '<label><input type="checkbox"' + (m.sel[o.v] ? ' checked' : '') + ' onchange="msPick(\'' + id + '\',this,' + JSON.stringify(o.v).replace(/"/g, '&quot;') + ')"><span>' + esc(o.t) + '</span></label>';
+      }).join('') + '<div class="ms-foot">' + (vals.length ? '<a onclick="msClear(\'' + id + '\')">Clear</a>' : '<span></span>') +
+      '<a onclick="msToggle(\'' + id + '\')">Done</a></div></div>';
+    if (open) el.classList.add('open');
+  }
+  function msToggle(id) {
+    var el = $(id), was = el.classList.contains('open');
+    [].forEach.call(document.querySelectorAll('.ms.open'), function (x) { x.classList.remove('open'); });
+    if (!was) el.classList.add('open');
+  }
+  function msPick(id, box, v) { MS[id].sel[v] = box.checked; msDraw(id); }
+  function msClear(id) { MS[id].sel = {}; msDraw(id); }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest || !e.target.closest('.ms')) [].forEach.call(document.querySelectorAll('.ms.open'), function (x) { x.classList.remove('open'); });
+  });
+  msSet('fBeds', ['4', '5', '6', '7']);
+  msSet('fBase', [{ v: '1', t: 'With' }, { v: '0', t: 'Without' }]);
+  msSet('fPos', ['Mid', 'Corner']);
+  msSet('fCluster', []); msSet('fStyle', []); msSet('fStatus', []); msSet('fView', []);
   function getFilters() {
     return {
-      cluster: val('fCluster'), beds: val('fBeds'), style: val('fStyle'), basement: val('fBase'),
-      minPlot: parseFloat(val('fPlot').replace(/[^0-9.]/g, '')) || 0, position: val('fPos'),
-      view: val('fView').toLowerCase(), status: val('fStatus'),
+      cluster: msVals('fCluster'), beds: msVals('fBeds'), style: msVals('fStyle'), basement: msVals('fBase'),
+      minPlot: parseFloat(val('fPlot').replace(/[^0-9.]/g, '')) || 0, position: msVals('fPos').map(lc),
+      view: msVals('fView').map(lc), status: msVals('fStatus'),
       dirs: [].slice.call(document.querySelectorAll('#fDirs input:checked')).map(function (i) { return i.value; }),
       q: val('q').trim().toLowerCase(),
     };
   }
   function activeCount(f) {
-    var n = 0; ['cluster','beds','style','basement','minPlot','position','view','status'].forEach(function (k) { if (f[k]) n++; });
+    var n = 0; ['cluster','beds','style','basement','minPlot','position','view','status'].forEach(function (k) { if (Array.isArray(f[k]) ? f[k].length : f[k]) n++; });
     return n + (f.dirs.length ? 1 : 0);
   }
   function pendingG(g) { return g.wa === 'new' || g.wa === 'follow' || (g.e && !g.em && !g.rp); }
   function unitMatch(o, f) {
-    if (f.cluster && o.cl !== f.cluster) return false;
-    if (f.beds && parseFloat(o.b) !== Number(f.beds)) return false;
-    if (f.style && o.sy !== f.style) return false;
-    if (f.basement && (f.basement === '1') !== /^(y|yes|1|true|with)/.test(lc(o.bs))) return false;
+    if (f.cluster.length && f.cluster.indexOf(o.cl) === -1) return false;
+    if (f.beds.length && f.beds.indexOf(String(parseFloat(o.b))) === -1) return false;
+    if (f.style.length && f.style.indexOf(o.sy) === -1) return false;
+    if (f.basement.length === 1 && (f.basement[0] === '1') !== /^(y|yes|1|true|with)/.test(lc(o.bs))) return false;
     if (f.minPlot && !(o.pl !== '' && Number(o.pl) >= f.minPlot)) return false;
-    if (f.position && lc(o.po) !== lc(f.position)) return false;
-    if (f.view && lc(o.vw).indexOf(f.view) === -1) return false;
+    if (f.position.length && f.position.indexOf(lc(o.po)) === -1) return false;
+    if (f.view.length && !f.view.some(function (v) { return lc(o.vw).indexOf(v) !== -1; })) return false;
     if (f.dirs.length && f.dirs.indexOf(String(o.o).toUpperCase()) === -1) return false;
-    if (f.status && o.st !== f.status) return false;
+    if (f.status.length && f.status.indexOf(o.st) === -1) return false;
     if (f.q && lc(o.n).indexOf(f.q) === -1 && lc(o.u) !== f.q) return false;
     return true;
   }
@@ -1147,10 +1191,10 @@
       var p = pendingG(g);
       g.rows.forEach(function (o) { if (p && o.cl) cl[o.cl] = (cl[o.cl] || 0) + 1; if (o.sy) sy[o.sy] = 1; if (o.st) st[o.st] = 1; });
     });
-    fillSelect('fCluster', Object.keys(cl).sort().map(function (k) { return { v: k, t: k + ' (' + cl[k] + ')' }; }));
-    fillSelect('fStyle', Object.keys(sy).sort());
-    fillSelect('fStatus', Object.keys(st).sort());
-    if (!$('fView').options[1]) fillSelect('fView', VIEWS);
+    msSet('fCluster', Object.keys(cl).sort().map(function (k) { return { v: k, t: k + ' (' + cl[k] + ')' }; }));
+    msSet('fStyle', Object.keys(sy).sort());
+    msSet('fStatus', Object.keys(st).sort());
+    if (!MS.fView.opts.length) msSet('fView', VIEWS);
   }
   function fillSelect(id, list) {
     var el = $(id), cur = el.value;
@@ -1162,7 +1206,8 @@
   function togglePanel() { $('fpanel').classList.toggle('open'); }
   function applyFilters() { pageSize = 60; drawList(); }
   function resetFilters() {
-    ['fCluster','fBeds','fStyle','fBase','fPlot','fPos','fView','fStatus'].forEach(function (id) { $(id).value = ''; });
+    ['fCluster','fBeds','fStyle','fBase','fPos','fView','fStatus'].forEach(function (id) { MS[id].sel = {}; msDraw(id); });
+    $('fPlot').value = '';
     [].forEach.call(document.querySelectorAll('#fDirs input'), function (i) { i.checked = false; });
     applyFilters();
   }
