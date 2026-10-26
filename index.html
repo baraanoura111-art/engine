@@ -404,7 +404,7 @@
   <div id="main"><div class="state">Loading…</div></div>
   <div id="listView" style="display:none">
     <div class="fbar">
-      <input class="search" id="q" placeholder="Search name or unit" oninput="searchSoon()">
+      <input class="search" id="q" placeholder="Search name, cluster or unit" oninput="searchSoon()">
       <button class="fbtn" id="fToggle" onclick="togglePanel()">Filters</button>
     </div>
     <div class="fpanel open" id="fpanel">
@@ -1183,8 +1183,19 @@
     if (f.view.length && !f.view.some(function (v) { return lc(o.vw).indexOf(v) !== -1; })) return false;
     if (f.dirs.length && f.dirs.indexOf(String(o.o).toUpperCase()) === -1) return false;
     if (f.status.length && f.status.indexOf(o.st) === -1) return false;
-    if (f.q && lc(o.n).indexOf(f.q) === -1 && lc(o.u) !== f.q) return false;
+    if (f.q && !searchMatch(o, f.q)) return false;
     return true;
+  }
+  // Search: name, cluster and unit together, e.g. "ahmed", "lavita", "palmiera 1 17", "mareva 2 ahmed", "17"
+  function searchMatch(o, q) {
+    var cl = lc(o.cl), rest = q;
+    if (q.indexOf(cl) === 0 && (q.length === cl.length || q.charAt(cl.length) === ' ')) rest = q.slice(cl.length);
+    else if (cl.indexOf(q) === 0) rest = '';
+    var toks = rest.split(/\s+/).filter(Boolean), name = lc(o.n), u = lc(o.u);
+    if (rest === q) {                                   // no cluster name at the start: each word matches name, cluster or unit
+      return toks.every(function (t) { return /^\d+$/.test(t) ? u === t : (name.indexOf(t) !== -1 || cl.indexOf(t) !== -1 || u === t); });
+    }
+    return toks.every(function (t) { return /^\d+$/.test(t) ? u === t : (name.indexOf(t) !== -1 || u === t); });
   }
   function matchesG(g, f) {
     return g.rows.some(function (o) { return unitMatch(o, f); });   // owner shows if any of their villas matches
