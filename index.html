@@ -261,7 +261,7 @@
 
   /* Tools tab (Telegram bot) */
   .tbox { display:flex; gap:8px; align-items:flex-start; }
-  .tbox textarea { flex:1; min-width:0; min-height:48px; max-height:220px; padding:12px 13px; font:inherit; font-size:14px; line-height:1.45; color:var(--ink);
+  .tbox textarea { flex:1; min-width:0; height:48px; min-height:48px; max-height:220px; padding:12px 13px; font:inherit; font-size:14px; line-height:1.45; color:var(--ink);
                    background:var(--surface); border:1px solid var(--box); border-radius:12px; resize:none; }
   .tbox textarea:focus { outline:none; border-color:var(--sage); }
   .tbox .btn { width:auto; margin:0; min-height:48px; padding:0 18px; }
@@ -430,9 +430,9 @@
   <div id="pipeView" style="display:none"></div>
   <div id="resView" style="display:none"></div>
   <div id="toolsView" style="display:none">
+    <div class="tchips" id="tChips" style="margin:0 0 12px"></div>
     <div class="eye" style="margin-bottom:8px">Bot Tools</div>
-    <div class="tbox"><textarea id="tq" rows="1" placeholder="e.g. palmiera 1 17" oninput="tGrow()" onkeydown="tKey(event)"></textarea><button class="btn btn-solid" id="tRun" onclick="runTool()">Run</button></div>
-    <div class="tchips" id="tChips"></div>
+    <div class="tbox" style="margin-bottom:16px"><textarea id="tq" rows="1" placeholder="e.g. palmiera 1 17" oninput="tGrow()" onkeydown="tKey(event)"></textarea><button class="btn btn-solid" id="tRun" onclick="runTool()">Run</button></div>
     <div id="tOut"></div>
   </div>
 
@@ -1006,7 +1006,7 @@
       return '<button class="chip2" onclick="toolEx(' + i + ')">' + c[0] + '</button>'; }).join('');
     if (!$('tOut').innerHTML) $('tOut').innerHTML = '<div class="list-note">Type what you would send the bot, or tap an example. Posters and PDFs come back here, ready to share.</div>';
   }
-  function tGrow() { var t = $('tq'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 220) + 'px'; }
+  function tGrow() { var t = $('tq'); t.style.height = 'auto'; if (!t.value || !t.offsetParent) { t.style.height = ''; return; } t.style.height = Math.min(t.scrollHeight + 2, 220) + 'px'; }
   function tKey(e) { if (e.key === 'Enter' && !e.shiftKey && !/^\/post/i.test($('tq').value.trim())) { e.preventDefault(); runTool(); } }
   function toolEx(i) {
     var ex = TOOL_EX[i][1]; $('tq').value = ex; tGrow();
@@ -1110,6 +1110,7 @@
     $('tOne').className = t === 'one' ? 'on' : ''; $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = t === 'res' ? 'on' : '';
     $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : '';
     $('toolsView').style.display = t === 'tools' ? '' : 'none';
+    if (t === 'tools') setTimeout(tGrow, 0);
     $('main').style.display = t === 'one' ? '' : 'none';
     $('pipeView').style.display = t === 'pipe' ? '' : 'none';
     $('listView').style.display = t === 'list' ? '' : 'none';
