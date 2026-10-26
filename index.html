@@ -1162,21 +1162,30 @@
     lines.forEach(function (text) {
       var tmp = { id: 'tmp' + (++tdTmp), t: text, d: 0, a: stats.today, dn: '' };
       TODOS.push(tmp);
-      run('addTodo', [text], function (r) { tmp.id = r.id; tmp.t = r.t; }, 'task');
+      google.script.run.withSuccessHandler(function (r) {
+        tmp.id = r.id; tmp.t = r.t;
+        if (tmp.gone) run('deleteTodo', [r.id], null, 'task');            // deleted while it was saving
+        else if (tmp.d) run('setTodoDone', [r.id, true], null, 'task');  // ticked while it was saving
+      }).withFailureHandler(function (e) {
+        TODOS = TODOS.filter(function (y) { return y !== tmp; }); drawTodos();
+        toast('Task not saved: ' + (e.message || e));
+      }).addTodo(text);
     });
     drawTodos();
   }
   function todoFind(id) { return (TODOS || []).filter(function (x) { return x.id === id; })[0]; }
   function todoToggle(id) {
     var x = todoFind(id); if (!x) return;
-    if (/^tmp/.test(x.id)) { toast('Still saving… try again in a second'); return; }
     x.d = x.d ? 0 : 1; x.dn = x.d ? stats.today : '';
-    drawTodos(); run('setTodoDone', [x.id, !!x.d], null, 'task');
+    drawTodos();
+    if (!/^tmp/.test(x.id)) run('setTodoDone', [x.id, !!x.d], null, 'task');
   }
   function todoDel(id) {
-    var x = todoFind(id); if (!x || /^tmp/.test(x.id)) return;
+    var x = todoFind(id); if (!x) return;
     TODOS = TODOS.filter(function (y) { return y !== x; }); drawTodos();
-    run('deleteTodo', [x.id], function () { toast('Task deleted'); }, 'task');
+    if (/^tmp/.test(x.id)) { x.gone = true; return; }                     // removed once it finishes saving
+    google.script.run.withSuccessHandler(function () { toast('Task deleted'); })
+      .withFailureHandler(function (e) { TODOS.push(x); drawTodos(); toast('Not deleted: ' + (e.message || e)); }).deleteTodo(x.id);
   }
   function tdRow(x) {
     return '<div class="td-row' + (x.d ? ' done' : '') + '"><button class="td-chk" onclick="todoToggle(\'' + esc(x.id) + '\')" title="' + (x.d ? 'Move back to To Do' : 'Mark done') + '">' + (x.d ? '✓' : '') + '</button>' +
