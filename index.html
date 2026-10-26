@@ -258,6 +258,19 @@
   .tabs.four { grid-template-columns:repeat(4, minmax(0,1fr)); }
   .tabs.four button { font-size:10px; letter-spacing:.12em; padding:11px 2px; }
   .tabs.five { grid-template-columns:repeat(5, minmax(0,1fr)); }
+  .tabs.six { grid-template-columns:repeat(6, minmax(0,1fr)); }
+  .tabs.six button { font-size:9px; letter-spacing:.05em; padding:11px 1px; white-space:nowrap; overflow:hidden; }
+  .td-sec { margin:18px 0 4px; font-size:10.5px; letter-spacing:.3em; text-transform:uppercase; color:var(--sage); }
+  .td-row { display:flex; align-items:flex-start; gap:12px; padding:12px 2px; border-top:1px solid var(--line); }
+  .td-chk { flex:none; width:24px; height:24px; border-radius:50%; border:1px solid var(--sage); background:transparent; color:#161514; cursor:pointer; padding:0;
+            display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .td-row.done .td-chk { background:var(--sage-btn); border-color:var(--sage-btn); }
+  .td-t { flex:1; min-width:0; font-size:14px; line-height:1.45; color:var(--ink); word-break:break-word; padding-top:2px; white-space:pre-wrap; }
+  .td-row.done .td-t { color:var(--muted); }
+  .td-row.done .td-t .tx { text-decoration:line-through; }
+  .td-d { display:block; font-size:11px; color:var(--muted); text-decoration:none; margin-top:2px; }
+  .td-x { flex:none; background:none; border:0; color:var(--muted); font-size:18px; line-height:1; padding:2px 4px; cursor:pointer; }
+  .td-x:hover { color:#F0A69F; }
   .tabs.five button { font-size:9.5px; letter-spacing:.08em; padding:11px 1px; }
 
   /* Tools tab (Telegram bot) */
@@ -400,7 +413,7 @@
     <div class="sub"><span><b id="sFollow">–</b> follow-ups due</span><span><b id="sNew">–</b> units left</span></div>
   </div>
 
-  <div class="tabs five"><button id="tOne" class="on" onclick="tab('one')">List</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tList" onclick="tab('list')">Filters</button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tRes" onclick="tab('res')">Results</button></div>
+  <div class="tabs six"><button id="tOne" class="on" onclick="tab('one')">List</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tList" onclick="tab('list')">Filters</button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tTodo" onclick="tab('todo')">To Do</button><button id="tRes" onclick="tab('res')">Results</button></div>
 
   <div id="main"><div class="state">Loading…</div></div>
   <div id="listView" style="display:none">
@@ -430,6 +443,10 @@
 
   <div id="pipeView" style="display:none"></div>
   <div id="resView" style="display:none"></div>
+  <div id="todoView" style="display:none">
+    <div class="tbox" style="margin-bottom:6px"><textarea id="tdIn" rows="1" placeholder="Add a task (one per line)" oninput="tdGrow()" onkeydown="tdKey(event)"></textarea><button class="btn btn-solid" onclick="todoAdd()">Add</button></div>
+    <div id="tdList"><div class="state">Loading…</div></div>
+  </div>
   <div id="toolsView" style="display:none">
     <div class="tchips" id="tChips" style="margin:0 0 12px"></div>
     <div class="eye" style="margin-bottom:8px">Bot Tools</div>
@@ -1115,16 +1132,64 @@
   function tab(t) {
     mode = t;
     $('tOne').className = t === 'one' ? 'on' : ''; $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = t === 'res' ? 'on' : '';
-    $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : '';
+    $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : ''; $('tTodo').className = t === 'todo' ? 'on' : '';
+    $('todoView').style.display = t === 'todo' ? '' : 'none';
     $('toolsView').style.display = t === 'tools' ? '' : 'none';
     if (t === 'tools') setTimeout(tGrow, 0);
     $('main').style.display = t === 'one' ? '' : 'none';
     $('pipeView').style.display = t === 'pipe' ? '' : 'none';
     $('listView').style.display = t === 'list' ? '' : 'none';
     $('resView').style.display = t === 'res' ? '' : 'none';
-    $('deskWrap').style.display = (t === 'res' || t === 'tools' || isPhone) ? 'none' : '';
+    $('deskWrap').style.display = (t === 'res' || t === 'tools' || t === 'todo' || isPhone) ? 'none' : '';
     if (t === 'tools') { drawTools(); return; }
+    if (t === 'todo') { loadTodos(); return; }
     if (t === 'one') renderOne(); else if (t === 'list') drawList(); else if (t === 'pipe') drawPipeline(); else drawResults();
+  }
+
+  /* ---------- To Do: tasks saved in the tracker's "To Do" tab ---------- */
+  var TODOS = null, tdTmp = 0;
+  function loadTodos() {
+    drawTodos();
+    google.script.run.withSuccessHandler(function (list) { TODOS = list || []; drawTodos(); })
+      .withFailureHandler(function (e) { if (!TODOS) $('tdList').innerHTML = state('<b>Not loaded</b>' + esc(e.message || e)); }).getTodos();
+  }
+  function tdGrow() { var t = $('tdIn'); t.style.height = 'auto'; if (!t.value) { t.style.height = ''; return; } t.style.height = Math.min(t.scrollHeight + 2, 200) + 'px'; }
+  function tdKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); todoAdd(); } }
+  function todoAdd() {
+    var lines = $('tdIn').value.split('\n').map(function (l) { return l.replace(/^\s*([-•*·]|\d+[.)])\s*/, '').trim(); }).filter(Boolean);
+    if (!lines.length) return;
+    $('tdIn').value = ''; tdGrow(); TODOS = TODOS || [];
+    lines.forEach(function (text) {
+      var tmp = { id: 'tmp' + (++tdTmp), t: text, d: 0, a: stats.today, dn: '' };
+      TODOS.push(tmp);
+      run('addTodo', [text], function (r) { tmp.id = r.id; tmp.t = r.t; }, 'task');
+    });
+    drawTodos();
+  }
+  function todoFind(id) { return (TODOS || []).filter(function (x) { return x.id === id; })[0]; }
+  function todoToggle(id) {
+    var x = todoFind(id); if (!x) return;
+    if (/^tmp/.test(x.id)) { toast('Still saving… try again in a second'); return; }
+    x.d = x.d ? 0 : 1; x.dn = x.d ? stats.today : '';
+    drawTodos(); run('setTodoDone', [x.id, !!x.d], null, 'task');
+  }
+  function todoDel(id) {
+    var x = todoFind(id); if (!x || /^tmp/.test(x.id)) return;
+    TODOS = TODOS.filter(function (y) { return y !== x; }); drawTodos();
+    run('deleteTodo', [x.id], function () { toast('Task deleted'); }, 'task');
+  }
+  function tdRow(x) {
+    return '<div class="td-row' + (x.d ? ' done' : '') + '"><button class="td-chk" onclick="todoToggle(\'' + esc(x.id) + '\')" title="' + (x.d ? 'Move back to To Do' : 'Mark done') + '">' + (x.d ? '✓' : '') + '</button>' +
+      '<div class="td-t"><span class="tx">' + esc(x.t) + '</span>' + (x.d && x.dn ? '<span class="td-d">Done ' + dfmt(x.dn) + '</span>' : '') + '</div>' +
+      '<button class="td-x" onclick="todoDel(\'' + esc(x.id) + '\')" title="Delete">×</button></div>';
+  }
+  function drawTodos() {
+    if (!TODOS) { $('tdList').innerHTML = state('Loading…'); return; }
+    var open = TODOS.filter(function (x) { return !x.d; }), done = TODOS.filter(function (x) { return x.d; })
+      .sort(function (a, b) { return (b.dn || '') < (a.dn || '') ? -1 : 1; });
+    $('tdList').innerHTML = '<div class="td-sec">To Do · ' + open.length + '</div>' +
+      (open.length ? open.map(tdRow).join('') : '<div class="list-note" style="text-align:left;margin:8px 0 0">Nothing to do. Add a task above.</div>') +
+      (done.length ? '<div class="td-sec" style="margin-top:28px">Done · ' + done.length + '</div>' + done.map(tdRow).join('') : '');
   }
 
   /* ---------- Filters (same as the Villa Finder on baraanoura.com) ---------- */
