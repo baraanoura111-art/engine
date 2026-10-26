@@ -1246,20 +1246,56 @@
       .withFailureHandler(function (e) { $('docsPane').innerHTML = state('<b>Not loaded</b>' + esc(e.message || e)); }).getDocs();
   }
   function docIcon(d) { var e = (d.name.split('.').pop() || '').toUpperCase(); return /google-apps/.test(d.mime) ? 'PDF' : (e.length <= 4 ? e : 'FILE'); }
+  // Floor plans like "palmiera-1-4br-chamfered-with-basement.pdf" and maps like "Lavita Cluster Map.jpg" → cluster + tidy title
+  var DOC_CL = [['palmiera collective', 'Palmiera Collective'], ['palmiera 1', 'Palmiera 1'], ['palmiera 2', 'Palmiera 2'], ['palmiera 3', 'Palmiera 3'],
+    ['address villas tierra', 'Address Villas Tierra'], ['palace villas ostra', 'Palace Villas Ostra'], ['mareva 2', 'Mareva 2'], ['mareva', 'Mareva'],
+    ['mirage', 'Mirage'], ['lavita', 'Lavita'], ['valoria', 'Valoria']];
+  function docInfo(d) {
+    var base = d.name.replace(/\.[a-z0-9]{2,4}$/i, ''), t = lc(base).replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim(), cl = '', rest = t;
+    for (var i = 0; i < DOC_CL.length; i++) if (t.indexOf(DOC_CL[i][0]) === 0) { cl = DOC_CL[i][1]; rest = t.slice(DOC_CL[i][0].length).trim(); break; }
+    if (/cluster map/.test(t)) return { cl: cl || 'Other', kind: 0, title: 'Cluster Map', beds: 0 };
+    if (cl && /^\d+\s*br\b/.test(rest)) {
+      var beds = parseInt(rest, 10), words = rest.replace(/^\d+\s*br\s*/, '').split(' ').filter(Boolean).map(function (w) { return w === 'with' ? 'with' : cap1(w); });
+      return { cl: cl, kind: 1, beds: beds, title: beds + ' BR ' + words.join(' ').replace(/ with /, ' · With ').replace(/Type (\d)/, 'Type $1') };
+    }
+    return { cl: cl || 'Other', kind: 2, beds: 0, title: base };
+  }
+  var docCl = 'All', docQ = '';
   function drawDocs() {
-    var h = DOCS.files.length ? DOCS.files.map(function (d) {
-      var got = docFiles[d.id];
-      return '<div class="doc"><div class="ic">' + esc(docIcon(d)) + '</div><div class="dn"><b>' + esc(d.name.replace(/\.[a-z0-9]{2,4}$/i, '')) + '</b><span>' +
-        esc([d.size ? sizeTxt(d.size) : '', dfmt(d.date)].filter(Boolean).join(' · ')) + '</span></div><div class="da" id="da_' + esc(d.id) + '">' +
-        (got ? '<button class="mini" onclick="docShare(\'' + esc(d.id) + '\')">Share</button><button class="mini again" onclick="docSave(\'' + esc(d.id) + '\')">Save</button>'
-             : '<button class="mini again" onclick="docGet(\'' + esc(d.id) + '\')">Get</button>') + '</div></div>';
-    }).join('') : state('<b>No documents yet</b>Add files to the “Oasis Documents” folder in your Google Drive.');
+    var files = DOCS.files.map(function (d) { var x = docInfo(d); x.d = d; return x; });
+    var cls = DOC_CL.map(function (c) { return c[1]; }).filter(function (c) { return files.some(function (x) { return x.cl === c; }); });
+    if (files.some(function (x) { return x.cl === 'Other'; })) cls.push('Other');
+    var q = lc(docQ), show = files.filter(function (x) {
+      return (docCl === 'All' || x.cl === docCl) && (!q || lc(x.cl + ' ' + x.title + ' ' + x.d.name).indexOf(q) !== -1);
+    });
+    var h = '<input class="search" id="docQ" style="width:100%;margin-bottom:10px" placeholder="Search, e.g. mirage 6 br" value="' + esc(docQ) + '" oninput="docQ=this.value;drawDocsKeep()">' +
+      '<div class="ls" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">' + ['All'].concat(cls).map(function (c) {
+        return '<button class="chip2' + (docCl === c ? ' on' : '') + '" onclick="docCl=\'' + c + '\';drawDocs()">' + esc(c) + '</button>'; }).join('') + '</div>';
+    if (!DOCS.files.length) h += state('<b>No documents yet</b>Add files to the “Oasis Documents” folder in your Google Drive.');
+    else if (!show.length) h += state('<b>No matches</b>Try another cluster or search.');
+    var groups = {}; show.forEach(function (x) { (groups[x.cl] = groups[x.cl] || []).push(x); });
+    cls.forEach(function (c) {
+      var g = groups[c]; if (!g) return;
+      g.sort(function (a, b) { return a.kind - b.kind || a.beds - b.beds || (a.title < b.title ? -1 : 1); });
+      h += '<div class="td-sec">' + esc(c) + ' · ' + g.length + '</div>' + g.map(function (x) {
+        var d = x.d, got = docFiles[d.id];
+        return '<div class="doc"><div class="ic">' + esc(x.kind === 0 ? 'MAP' : docIcon(d)) + '</div><div class="dn"><b>' + esc(x.title) + '</b><span>' +
+          esc([x.kind === 1 ? 'Floor plan' : x.kind === 0 ? 'Image' : '', d.size ? sizeTxt(d.size) : ''].filter(Boolean).join(' · ')) + '</span></div><div class="da" id="da_' + esc(d.id) + '">' +
+          (got ? '<button class="mini" onclick="docShare(\'' + esc(d.id) + '\')">Share</button><button class="mini again" onclick="docSave(\'' + esc(d.id) + '\')">Save</button>'
+               : '<button class="mini again" onclick="docGet(\'' + esc(d.id) + '\')">Get</button>') + '</div></div>';
+      }).join('');
+    });
     $('docsPane').innerHTML = h + '<div class="list-note">Tap Get, then Share to send the actual file. <a href="' + esc(DOCS.folder) + '" target="_blank">Add files in Drive ↗</a></div>';
+  }
+  function drawDocsKeep() {                 // redraw while typing without losing the cursor
+    var el = $('docQ'), pos = el ? el.selectionStart : 0; drawDocs(); el = $('docQ'); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) {} }
   }
   function docGet(id) {
     var box = $('da_' + id); if (box) box.innerHTML = '<button class="mini again" disabled>Getting…</button>';
     google.script.run.withSuccessHandler(function (f) {
-      var blob = b64Blob(f.b64, f.mime); docFiles[id] = { blob: blob, url: URL.createObjectURL(blob), name: f.name, mime: f.mime }; drawDocs();
+      var blob = b64Blob(f.b64, f.mime), d = DOCS.files.filter(function (x) { return x.id === id; })[0], nm = f.name;
+      if (d) { var x = docInfo(d), ext = (f.name.match(/\.[a-z0-9]{2,4}$/i) || [''])[0]; if (x.kind !== 2) nm = (x.cl + ' ' + x.title.replace(/ · /g, ' ')).replace(/[\/:*?"<>|]/g, '') + ext; }
+      docFiles[id] = { blob: blob, url: URL.createObjectURL(blob), name: nm, mime: f.mime }; drawDocs();
     }).withFailureHandler(function (e) { drawDocs(); toast(e.message || String(e)); }).getDocFile(id);
   }
   function docSave(id) { var f = docFiles[id]; if (!f) return; var a = document.createElement('a'); a.href = f.url; a.download = f.name; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
