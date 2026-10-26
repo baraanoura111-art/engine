@@ -1214,17 +1214,8 @@
   function panelHtml(g, id) {
     var a = g.rows[0];
     return (g.dnd ? '<div class="dnd-note"><b>DND</b> · This owner is tagged Do Not Disturb in your tracker.</div>' : '') +
-      '<div class="panel-details">' +
-        (g.rows.length === 1 ? kv('Cluster', esc(a.cl)) + kv('Unit', esc(a.u)) : '') +
-        kv('Status', esc(g.st || '—')) +
-        (g.names.length > 1 ? kv('Names', esc(g.names.join(' / '))) : '') +
-        (g.siblings && g.siblings.length > 1 ? kv('Owner\'s Units', esc(g.siblings.length + ' · ' + otherUnits(g))) : '') +
-        kv('Mobile', g.p ? '+' + esc(g.p) : (g.tel ? '+' + esc(g.tel) + ' <span style="color:var(--muted)">(landline)</span>' : '—')) +
-        (g.p2 ? kv('Second Number', '+' + esc(g.p2) +
-            ' · <a onclick="waSecond(\'' + id + '\')">WhatsApp</a> · <a href="tel:+' + esc(g.p2) + '">Call</a>') : '') +
-        kv('Email', g.e ? esc(g.e) : '—') +
-        kv('Tracker', '<a href="' + esc(rowUrl(a)) + '" target="_blank">Row ' + a.r + ' ↗</a>') +
-      '</div>' +
+      (g.p2 ? '<div class="list-note" style="margin:10px 0 0;text-align:left">Second number +' + esc(g.p2) +
+          ' · <a onclick="waSecond(\'' + id + '\')">WhatsApp</a> · <a href="tel:+' + esc(g.p2) + '">Call</a></div>' : '') +
       toolsHtml(g, id) +
       '<button class="btn btn-line" style="margin-top:14px" onclick="toggle(\'' + id + '\')">Close</button>';
   }
