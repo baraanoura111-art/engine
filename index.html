@@ -237,6 +237,7 @@
 
   /* Compact action row under each owner */
   .act-row { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; margin-top:9px; }
+  .emaar { display:inline-block; margin-right:7px; padding:1px 7px; border-radius:8px; border:1px solid var(--muted); color:var(--muted); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; vertical-align:2px; }
   .step-row { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; margin-top:6px; }
   .step-row .dots { display:flex; justify-content:center; gap:8px; }
   .dot { width:24px; height:24px; border-radius:50%; border:1px solid var(--box); background:transparent; color:var(--muted);
@@ -663,7 +664,7 @@
    * Owner Outreach — loads the tracker once, then everything
    * (filters, search, grouping, messages) runs in the browser.
    * ========================================================= */
-  var O = [], G = [], T = null, stats = { sentToday: 0, cap: 30, today: '' }, sheetUrl = '', VIEWS = [];
+  var O = [], G = [], GD = [], T = null, stats = { sentToday: 0, cap: 30, today: '' }, sheetUrl = '', VIEWS = [];
   var skips = {}, current = null, pageSize = 60, mode = 'one', loaded = false;
   var STATUSES = ['DND', 'Sale', 'Handover', 'Not Selling', 'Sold'];
   var isPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -726,6 +727,8 @@
       g.siblings = sk && same[sk].length > 1 ? same[sk] : [];
       return g;
     });
+    GD = G.filter(function (g) { return g.rows[0].dev; });    // Emaar-owned: only shown when searching
+    G = G.filter(function (g) { return !g.rows[0].dev; });
   }
   function finishGroup(g) {
     var R = g.rows, a = R[0];
@@ -1237,7 +1240,8 @@
     if (!loaded) return;
     var f = getFilters(), n = activeCount(f), fb = $('fToggle');
     fb.textContent = n ? 'Filters · ' + n : 'Filters'; fb.className = 'fbtn' + (n ? ' on' : '');
-    var all = G.filter(function (g) { return matchesG(g, f); });
+    var all = (f.q ? G.concat(GD) : G).filter(function (g) { return matchesG(g, f); });
+    if (f.q) all.sort(function (a, b) { return a.rows[0].r - b.rows[0].r; });
     // tracker order: contacted owners stay in place instead of dropping to the end
     shownF = all.slice(0, pageSize);
     if (!all.length) { $('list').innerHTML = state('<b>No Matches</b>' + (f.q ? 'No owner or unit matches “' + esc(f.q) + '”.' : 'Try fewer filters.')); return; }
@@ -1257,7 +1261,7 @@
       (g.cb ? (cbDue(g) ? 'Call back due' : 'Call back ' + dfmt(g.cb)) : 'No call-back set') + (g.rpt ? ' · ' + esc(g.rpt) : '') + '</div>' : '';
     return '<div class="li' + (g.dnd ? ' is-dnd' : '') + (open ? ' open' : '') + '" id="li_' + id + '">' +
       '<div class="li-row"><div class="li-main" onclick="toggle(\'' + id + '\')">' +
-        '<div class="li-name">' + (g.dnd ? '<span class="dnd">DND</span>' : '') + (opt === 'pipe' && askNum(g.ask) > 0 ? '<span class="ask">Asking ' + esc(g.ask) + '</span>' : '') + esc(g.n) +
+        '<div class="li-name">' + (g.rows[0].dev ? '<span class="emaar">Emaar</span>' : '') + (g.dnd ? '<span class="dnd">DND</span>' : '') + (opt === 'pipe' && askNum(g.ask) > 0 ? '<span class="ask">Asking ' + esc(g.ask) + '</span>' : '') + esc(g.n) +
           (g.rp && !g.pp && opt !== 'pipe' ? '<span class="badge2">Replied</span>' : '') + cbTag(g) + (g.pp && opt !== 'pipe' ? '<span class="tag-st">' + esc(g.pp) + '</span>' : '') + '</div>' +
         '<div class="li-meta">' + (g.wa === 'follow' ? '<span class="fu">' + (nextWA(g) === 3 ? 'Message 3' : 'Follow-up') + ' · </span>' : '') +
           (many ? '<b style="font-weight:400;color:var(--ink)">' + g.rows.length + ' villas</b>' : esc(a.cl) + ' · <span class="unit-no">Unit ' + esc(a.u) + '</span>') +
@@ -1269,6 +1273,7 @@
       (opt === 'pipe'
         ? '<div class="act-row">' + waMini(g, id) + callMini(g) +
           (g.pp !== 'Sold' ? '<button class="mini fw" onclick="act(\'' + id + '\',\'next\')">→ ' + STAGES[STAGES.indexOf(g.pp) + 1] + '</button>' : '<button class="mini again" disabled>✓ Sold</button>') + '</div>'
+        : g.rows[0].dev ? '<div class="li-spec" style="margin-top:6px">Owned by Emaar · not contacted</div>'
         : '<div class="act-row">' + mailMini(g, id) + callMini(g) + waMini(g, id) + '</div>' + stepDots(g, id)) +
       (g._warn ? warnHtml(g, id) : '') +
       '</div>' +
