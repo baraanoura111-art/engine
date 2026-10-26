@@ -432,7 +432,7 @@
   <div id="toolsView" style="display:none">
     <div class="tchips" id="tChips" style="margin:0 0 12px"></div>
     <div class="eye" style="margin-bottom:8px">Bot Tools</div>
-    <div class="tbox" style="margin-bottom:16px"><textarea id="tq" rows="1" placeholder="e.g. palmiera 1 17" oninput="tGrow()" onkeydown="tKey(event)"></textarea><button class="btn btn-solid" id="tRun" onclick="runTool()">Run</button></div>
+    <div class="tbox" style="margin-bottom:16px"><textarea id="tq" rows="1" placeholder="e.g. palmiera 1 17" onfocus="tClear()" oninput="tFilled=false;tGrow()" onkeydown="tKey(event)"></textarea><button class="btn btn-solid" id="tRun" onclick="runTool()">Run</button></div>
     <div id="tOut"></div>
   </div>
 
@@ -1011,9 +1011,12 @@
   function toolEx(i) {
     var ex = TOOL_EX[i][1]; $('tq').value = ex; tGrow();
     Array.prototype.forEach.call($('tChips').children, function (b, j) { b.className = 'chip2' + (j === i ? ' on' : ''); });
-    if (ex === '/help') runTool(); else $('tq').focus();
+    tFilled = true;                                   // tapping the box clears an example
+    if (ex === '/help') runTool();
   }
-  function toolRun(text) { tab('tools'); $('tq').value = text; tGrow(); runTool(); }
+  var tFilled = false;
+  function tClear() { if (tFilled) { tFilled = false; $('tq').value = ''; tGrow(); } }
+  function toolRun(text) { tab('tools'); $('tq').value = text; tGrow(); tFilled = true; runTool(); }
   function getTicket() {
     if (botT && botT.exp - Date.now() / 1000 > 60) return Promise.resolve(botT);
     return new Promise(function (ok, bad) {
@@ -1023,6 +1026,7 @@
   }
   function runTool() {
     var text = $('tq').value.trim(); if (!text || toolBusy) return;
+    tFilled = true;                                   // after a run, tapping the box starts fresh
     toolBusy = true; $('tRun').disabled = true; $('tRun').textContent = '…';
     $('tOut').innerHTML = '<div class="state">Working on it… posters and PDFs can take up to a minute.</div>';
     getTicket().then(function (t) {
