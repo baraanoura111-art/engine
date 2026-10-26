@@ -1222,7 +1222,7 @@
     var f = getFilters(), n = activeCount(f), fb = $('fToggle');
     fb.textContent = n ? 'Filters · ' + n : 'Filters'; fb.className = 'fbtn' + (n ? ' on' : '');
     var all = G.filter(function (g) { return matchesG(g, f); });
-    all.sort(function (a, b) { return rank(a) - rank(b); });
+    // tracker order: contacted owners stay in place instead of dropping to the end
     shownF = all.slice(0, pageSize);
     if (!all.length) { $('list').innerHTML = state('<b>No Matches</b>' + (f.q ? 'No owner or unit matches “' + esc(f.q) + '”.' : 'Try fewer filters.')); return; }
     $('list').innerHTML =
