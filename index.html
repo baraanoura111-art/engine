@@ -1191,7 +1191,7 @@
       var p = pendingG(g);
       g.rows.forEach(function (o) { if (p && o.cl) cl[o.cl] = (cl[o.cl] || 0) + 1; if (o.sy) sy[o.sy] = 1; if (o.st) st[o.st] = 1; });
     });
-    msSet('fCluster', Object.keys(cl).sort().map(function (k) { return { v: k, t: k + ' (' + cl[k] + ')' }; }));
+    msSet('fCluster', Object.keys(cl).sort());
     msSet('fStyle', Object.keys(sy).sort());
     msSet('fStatus', Object.keys(st).sort());
     if (!MS.fView.opts.length) msSet('fView', VIEWS);
