@@ -260,7 +260,8 @@
   .tabs.five { grid-template-columns:repeat(5, minmax(0,1fr)); }
   .tabs.seven { display:flex; flex-wrap:wrap; }
   .tabs.seven button { flex:1 1 25%; font-size:10px; letter-spacing:.1em; padding:11px 2px; white-space:nowrap; }
-  .tabs.seven button:nth-child(n+5) { flex-basis:33%; border-top:1px solid var(--box); }
+  .tabs.seven button { flex-basis:33%; }
+  .tabs.seven button:nth-child(n+4) { border-top:1px solid var(--box); }
   .tcount { display:inline-block; min-width:16px; margin-left:5px; padding:0 4px; border-radius:8px; background:#C8473D; color:#fff; font-size:9px; letter-spacing:0; line-height:15px; }
   .tcount:empty { display:none; }
   .seg { display:flex; border:1px solid var(--box); border-radius:12px; overflow:hidden; margin-bottom:16px; }
@@ -448,15 +449,15 @@
     <div class="sub"><span><b id="sFollow">–</b> follow-ups due</span><span><b id="sNew">–</b> units left</span></div>
   </div>
 
-  <div class="tabs seven"><button id="tOne" class="on" onclick="tab('one')">List</button><button id="tList" onclick="tab('list')">Filters</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tLeads" onclick="tab('leads')">Leads<span class="tcount" id="leadCount"></span></button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tTodo" onclick="tab('todo')">To Do</button><button id="tRes" onclick="tab('res')">Results</button></div>
+  <div class="tabs seven"><button id="tList" class="on" onclick="tab('list')">Cold Contacts</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tLeads" onclick="tab('leads')">Leads<span class="tcount" id="leadCount"></span></button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tTodo" onclick="tab('todo')">To Do</button><button id="tRes" onclick="tab('res')">Results</button></div>
 
-  <div id="main"><div class="state">Loading…</div></div>
-  <div id="listView" style="display:none">
+  <div id="main" style="display:none"></div>
+  <div id="listView">
     <div class="fbar">
       <input class="search" id="q" placeholder="Search name, cluster or unit" oninput="searchSoon()">
       <button class="fbtn" id="fToggle" onclick="togglePanel()">Filters</button>
     </div>
-    <div class="fpanel open" id="fpanel">
+    <div class="fpanel" id="fpanel">
       <div class="fgrid">
         <div><label class="fl">Cluster</label><div class="ms" id="fCluster"></div></div>
         <div><label class="fl">Status</label><div class="ms" id="fStatus"></div></div>
@@ -723,7 +724,7 @@
    * (filters, search, grouping, messages) runs in the browser.
    * ========================================================= */
   var O = [], G = [], GD = [], T = null, stats = { sentToday: 0, cap: 30, today: '' }, sheetUrl = '', VIEWS = [];
-  var skips = {}, current = null, pageSize = 60, mode = 'one', loaded = false;
+  var skips = {}, current = null, pageSize = 20, mode = 'list', loaded = false;
   var STATUSES = ['DND', 'Sale', 'Handover', 'Not Selling', 'Sold'];
   var isPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   var desk = document.getElementById('desktop');
@@ -1031,25 +1032,7 @@
     return f.concat(n);
   }
   var shownC = [];
-  function renderOne() {
-    if (!loaded) return;
-    var cbs = G.filter(cbDue).sort(function (a, b) { return a.cb < b.cb ? -1 : 1; });
-    shownC = cbs;
-    var cbIds = {}; cbs.forEach(function (g) { cbIds[g.key] = 1; });
-    var all = queue().filter(function (g) { return !cbIds[g.key]; });
-    shownQ = all.slice(0, qSize);
-    var top = cbs.length ? '<div class="sect">Call back today · ' + cbs.length + '</div><div class="list">' +
-      cbs.map(function (g, i) { return rowHtml(g, 'c' + i, false); }).join('') + '</div>' : '';
-    if (!all.length) { $('main').innerHTML = top + state('<b>No Owners</b>Nothing to show.'); return; }
-    var fresh = all.filter(function (g) { return g.wa === 'new'; }).length;
-    $('main').innerHTML = top +
-      '<div class="q-head"' + (cbs.length ? ' style="margin-top:14px"' : '') + '><p class="matched" style="margin:0"><b>' + all.length + '</b> units · <b>' + fresh + '</b> not contacted yet</p>' +
-        (Object.keys(skips).length ? '<a class="refresh" onclick="skips={};renderOne()">Show skipped</a>' : '') + '</div>' +
-      (capped() ? '<div class="list-note" style="margin:0 0 10px">Daily WhatsApp limit reached. Email still works.</div>' : '') +
-      '<div class="list">' + shownQ.map(function (g, i) { return rowHtml(g, 'q' + i, false); }).join('') + '</div>' +
-      (all.length > shownQ.length ? '<button class="btn btn-line" onclick="qSize+=20;renderOne()">Show More (' + (all.length - shownQ.length) + ' left)</button>' : '') +
-      '<div class="list-note">Tap a name to see details, edit the message, set status or add a note.</div>';
-  }
+  function renderOne() { drawList(); }     // the old List tab is now part of Cold Contacts
   function skipG(id) { var g = groupById(id); if (!g) return; skips[g.key] = 1; renderOne(); toast('Skipped · ' + g.n); }
 
   /* ---------- Tools tab: the Telegram bot, inside the app ---------- */
@@ -1173,7 +1156,7 @@
   /* ---------- Tabs ---------- */
   function tab(t) {
     mode = t;
-    $('tOne').className = t === 'one' ? 'on' : ''; $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = t === 'res' ? 'on' : '';
+    $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = t === 'res' ? 'on' : '';
     $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : ''; $('tTodo').className = t === 'todo' ? 'on' : '';
     $('todoView').style.display = t === 'todo' ? '' : 'none';
     $('tLeads').className = t === 'leads' ? 'on' : ''; $('leadsView').style.display = t === 'leads' ? '' : 'none';
@@ -1465,7 +1448,7 @@
     }).join('');
   }
   function togglePanel() { $('fpanel').classList.toggle('open'); }
-  function applyFilters() { pageSize = 60; drawList(); }
+  function applyFilters() { pageSize = 20; drawList(); }
   function resetFilters() {
     ['fCluster','fBeds','fStyle','fBase','fPos','fView','fStatus'].forEach(function (id) { MS[id].sel = {}; msDraw(id); });
     $('fPlot').value = '';
@@ -1473,8 +1456,8 @@
     applyFilters();
   }
   var searchTimer = null;
-  function searchSoon() { clearTimeout(searchTimer); searchTimer = setTimeout(function () { pageSize = 60; drawList(); }, 150); }
-  function showMore() { pageSize += 60; drawList(); }
+  function searchSoon() { clearTimeout(searchTimer); searchTimer = setTimeout(function () { pageSize = 20; drawList(); }, 150); }
+  function showMore() { pageSize += 20; drawList(); }
 
   /* ---------- Filters tab: every owner, filtered like the Villa Finder ---------- */
   var shownF = [];
@@ -1482,17 +1465,28 @@
     if (!loaded) return;
     var f = getFilters(), n = activeCount(f), fb = $('fToggle');
     fb.textContent = n ? 'Filters · ' + n : 'Filters'; fb.className = 'fbtn' + (n ? ' on' : '');
-    var all = (f.q ? G.concat(GD) : G).filter(function (g) { return matchesG(g, f); });
-    if (f.q) all.sort(function (a, b) { return a.rows[0].r - b.rows[0].r; });
-    // tracker order: contacted owners stay in place instead of dropping to the end
+    var plain = !n && !f.q, top = '', all;
+    if (plain) {                       // no search or filters: call-backs due, then follow-ups due, then everyone in tracker order
+      var cbs = G.filter(cbDue).sort(function (a, b) { return a.cb < b.cb ? -1 : 1; }), cbIds = {};
+      shownC = cbs; cbs.forEach(function (g) { cbIds[g.key] = 1; });
+      top = cbs.length ? '<div class="sect">Call back today · ' + cbs.length + '</div><div class="list">' +
+        cbs.map(function (g, i) { return rowHtml(g, 'c' + i, false); }).join('') + '</div><div style="height:14px"></div>' : '';
+      all = queue().filter(function (g) { return !cbIds[g.key]; });
+    } else {                           // search / filters: matches in tracker order (Emaar units only when searching)
+      shownC = [];
+      all = (f.q ? G.concat(GD) : G).filter(function (g) { return matchesG(g, f); });
+      if (f.q) all.sort(function (a, b) { return a.rows[0].r - b.rows[0].r; });
+    }
     shownF = all.slice(0, pageSize);
-    if (!all.length) { $('list').innerHTML = state('<b>No Matches</b>' + (f.q ? 'No owner or unit matches “' + esc(f.q) + '”.' : 'Try fewer filters.')); return; }
-    $('list').innerHTML =
-      '<p class="matched"><b>' + all.length + '</b> unit' + (all.length === 1 ? '' : 's') + ' match' + (all.length > shownF.length ? ' · showing ' + shownF.length : '') + '</p>' +
+    if (!all.length) { $('list').innerHTML = top + state('<b>No Matches</b>' + (f.q ? 'No owner or unit matches “' + esc(f.q) + '”.' : 'Try fewer filters.')); return; }
+    var fresh = all.filter(function (g) { return g.wa === 'new'; }).length;
+    $('list').innerHTML = top +
+      '<p class="matched"><b>' + all.length + '</b> unit' + (all.length === 1 ? '' : 's') + (plain ? ' · <b>' + fresh + '</b> not contacted yet' : ' match') +
+        (all.length > shownF.length ? ' · showing ' + shownF.length : '') + '</p>' +
       (capped() ? '<div class="list-note" style="margin:0 0 10px">Daily WhatsApp limit reached. Email still works.</div>' : '') +
       '<div class="list">' + shownF.map(function (g, i) { return rowHtml(g, 'f' + i, false); }).join('') + '</div>' +
       (all.length > shownF.length ? '<button class="btn btn-line" onclick="showMore()">Show More (' + (all.length - shownF.length) + ' left)</button>' : '') +
-      '<div class="list-note">Tap a name to see details, edit the message, set status or add a note.</div>';
+      '<div class="list-note">Tap a name to see the history, call-back, pipeline, status and notes.</div>';
   }
 
   /* ---------- One row, used by both tabs ---------- */
