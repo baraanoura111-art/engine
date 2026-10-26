@@ -766,7 +766,8 @@
   }
   function mailParts(g) {
     var p = [T.emailGreeting, '', T.emailIntro]; if (g.gh) p.push(T.ghida);
-    p.push('', (T.emailBody && T.emailBody[g.k]) || T.body[g.k].replace(/\n/g, '\n\n'), '', T.emailSignoff);
+    p.push('', (T.emailBody && T.emailBody[g.k]) || T.body[g.k].replace(/\n/g, '\n\n'));
+    if (T.emailSignoff) p.push('', T.emailSignoff);
     return { subject: fillG(T.emailSubject[g.k], g, ''), body: fillG(p.join('\n'), g, 'Sir or Madam') };
   }
   function waUrl(phone, msg) {
