@@ -224,6 +224,15 @@
 
   /* Compact action row under each owner */
   .act-row { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; margin-top:9px; }
+  .step-row { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; margin-top:6px; }
+  .step-row .dots { display:flex; justify-content:center; gap:8px; }
+  .dot { width:24px; height:24px; border-radius:50%; border:1px solid var(--box); background:transparent; color:var(--muted);
+         font:400 11px var(--body); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; }
+  .dot:hover { border-color:var(--sage); color:var(--sage); }
+  .dot.next { border-color:var(--sage); color:var(--sage); }
+  .dot.done { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
+  .dot:disabled { opacity:.4; cursor:default; }
+  @media (max-width:520px) { .dot { width:28px; height:28px; font-size:12px; } }
   .act-row .mini { width:auto; min-width:0; height:30px; font-size:10.5px; letter-spacing:.06em; padding:0 4px; text-overflow:clip; }
   .li-row { display:block; }
   .unit-no { }
@@ -725,7 +734,8 @@
         : ks.indexOf('palmiera') !== -1 ? 'palmiera' : ks[0];
     var sts = R.map(function (o) { return o.st; }).filter(function (v, i, x) { return x.indexOf(v) === i; });
     g.st = sts.length === 1 ? sts[0] : sts.filter(Boolean).join(', ');
-    g.sp = Math.max.apply(null, R.map(function (o) { return o.sp || 1; }));
+    g.sp = Math.max.apply(null, R.map(function (o) { return o.sp || 0; }));
+    g.es = Math.max.apply(null, R.map(function (o) { return o.es || 0; }));
     g.wt = (R.filter(function (o) { return o.wt; })[0] || {}).wt || '';
     g.cb = (R.filter(function (o) { return o.cb; })[0] || {}).cb || '';
     g.pp = (R.filter(function (o) { return o.pp; })[0] || {}).pp || '';
@@ -759,16 +769,25 @@
     return t.replace(/\{name\}/g, g.f || fallback).replace(/\{cluster\}/g, u.cluster)
             .replace(/\{home\}/g, home).replace(/\{Home\}/g, home.charAt(0).toUpperCase() + home.slice(1));
   }
-  function waText(g) {
-    if (g.wa === 'follow') return fillG(T.followup[g.k === 'handover' ? 'handover' : 'seller'] + '\n\n' + T.waSignoff, g, 'there');
+  // Messages 1-3. 2 and 3 are the follow-ups; groups: seller / valuation (Not Selling) / handover
+  function grpOf(k) { return k === 'handover' || k === 'valuation' ? k : 'seller'; }
+  function nextWA(g) { return Math.min(3, (g.sp || 0) + 1); }
+  function nextEM(g) { return Math.min(3, (g.es || 0) + 1); }
+  function waText(g, n) {
+    n = n || nextWA(g);
+    if (n === 2) return fillG(T.followup[grpOf(g.k)] + '\n\n' + T.waSignoff, g, 'there');
+    if (n === 3) return fillG(T.waFinal + '\n\n' + T.waSignoff, g, 'there');
     var p = [T.waGreeting]; if (g.gh) p.push(T.ghida); p.push(T.body[g.k]);
     return fillG(p.join('\n') + '\n\n' + T.waSignoff, g, 'there');
   }
-  function mailParts(g) {
-    var p = [T.emailGreeting, '', T.emailIntro]; if (g.gh) p.push(T.ghida);
-    p.push('', (T.emailBody && T.emailBody[g.k]) || T.body[g.k].replace(/\n/g, '\n\n'));
+  function mailParts(g, n) {
+    n = n || nextEM(g);
+    var p = [T.emailGreeting, ''];
+    if (n === 1) { p.push(T.emailIntro); if (g.gh) p.push(T.ghida); p.push('', T.emailBody[g.k]); }
+    else p.push(n === 2 ? T.emailFollow[grpOf(g.k)] : T.emailFinal);
     if (T.emailSignoff) p.push('', T.emailSignoff);
-    return { subject: fillG(T.emailSubject[g.k], g, ''), body: fillG(p.join('\n'), g, 'Sir or Madam') };
+    var subj = fillG(T.emailSubject[g.k], g, '');
+    return { subject: n === 1 ? subj : 'Re: ' + subj, body: fillG(p.join('\n'), g, 'Sir or Madam') };
   }
   function waUrl(phone, msg) {
     var t = encodeURIComponent(msg);
@@ -811,24 +830,27 @@
   function capped() { return stats.sentToday >= stats.cap; }
 
   /* ---------- Actions (instant on screen, saved in the background) ---------- */
-  function doWhatsApp(g, text) {
+  function doWhatsApp(g, text, n) {
     if (!g.p) return;
     if (capped()) { toast('Daily limit reached'); return; }
-    window.open(waUrl(g.p, text || waText(g)), '_blank');
-    var step = g.wa === 'follow' ? 2 : (g.wa === 'new' ? 1 : g.sp);
-    var tpl = g.wa === 'follow' ? 'follow-up' : g.k;
-    if (g.wa !== 'done') stats.sentToday++;
-    g.rows.forEach(function (o) { if (o.p) { o.wa = 'done'; o.wd = 1; o.sp = step; o.wdt = stats.today; if (!o.wt) o.wt = tpl; } });
+    var step = n || nextWA(g);
+    window.open(waUrl(g.p, text || waText(g, step)), '_blank');
+    var tpl = step === 1 ? g.k : step === 2 ? 'follow-up' : 'final';
+    if (step > (g.sp || 0)) stats.sentToday++;
+    var top = Math.max(g.sp || 0, step);
+    g.rows.forEach(function (o) { if (o.p) { o.wa = 'done'; o.wd = 1; o.sp = Math.max(o.sp || 0, step); o.wdt = stats.today; o.wt = tpl; } });
     g.wdt = stats.today;
-    g.wa = 'done'; g.sp = step; g.wt = g.wt || tpl;
+    g.wa = 'done'; g.sp = top; g.wt = tpl;
     updateStats();
     run('logWhatsAppRows', [rowsOf(g), step, tpl], function () { toast('✓ WhatsApp logged · ' + g.n + (g.rows.length > 1 ? ' (' + g.rows.length + ' villas)' : '')); }, 'WhatsApp');
   }
-  function doEmail(g) {
+  function doEmail(g, n) {
     if (!g.e) return;
-    window.open(mailUrl(g, mailParts(g)), '_blank');
+    var step = n || nextEM(g);
+    window.open(mailUrl(g, mailParts(g, step)), '_blank');
     g.em = 1; setRows(g, 'em', 1); setRows(g, 'edt', stats.today); g.edt = stats.today;
-    run('logEmailRows', [rowsOf(g)], function () { toast('✓ Email logged · ' + g.n); }, 'email');
+    g.es = Math.max(g.es || 0, step); g.rows.forEach(function (o) { o.es = Math.max(o.es || 0, step); });
+    run('logEmailRows', [rowsOf(g), step], function () { toast('✓ Email ' + step + ' logged · ' + g.n); }, 'email');
   }
   function doInvalid(g) {
     setRows(g, 'p', ''); setRows(g, 'wa', 'none'); g.p = ''; g.wa = 'none'; updateStats();
@@ -836,7 +858,7 @@
   }
   function doStatus(g, st) {
     var cur = g.st === st ? '' : st;                       // tap the active status again to clear it
-    g.rows.forEach(function (o) { o.st = cur; o.k = kindOf(o); o.dnd = /\bdnd\b/.test(lc(cur)) ? 1 : 0; if (o.k === 'valuation' && o.wa === 'follow') o.wa = 'done'; });
+    g.rows.forEach(function (o) { o.st = cur; o.k = kindOf(o); o.dnd = /\bdnd\b/.test(lc(cur)) ? 1 : 0; });
     finishGroup(g);
     run('setStatusRows', [rowsOf(g), cur], function () { toast(cur ? '✓ Status: ' + cur + ' · ' + g.n : '✓ Status cleared · ' + g.n); }, 'status');
   }
@@ -862,18 +884,18 @@
   }
 
   /* Owner tools: status buttons, Replied, note */
-  var TL = { palmiera: 'Palmiera message', other: 'Other-cluster message', available: 'Sale message', valuation: 'Not Selling check-in', handover: 'Handover message', 'follow-up': 'Follow-up' };
+  var TL = { palmiera: 'Palmiera message', other: 'Other-cluster message', available: 'Sale message', valuation: 'Not Selling check-in', handover: 'Handover message', 'follow-up': 'Follow-up', final: 'Message 3' };
   var STAGES = ['Interested', 'Valuation', 'Listed', 'Sold'];
   function historyHtml(g) {
-    var fu = '—';
-    if (g.wa === 'follow') fu = '<b>due now</b>';
-    else if (g.sp === 2) fu = 'sent';
-    else if (g.wdt && !g.rp && g.k !== 'valuation') fu = 'due <b>' + dfmt(addDays(g.wdt, stats.followDays || 5)) + '</b>';
-    else if (g.k === 'valuation') fu = 'none (Not Selling)';
+    var fu = '—', nx = nextWA(g);
+    if (g.sp >= 3) fu = 'all 3 sent';
+    else if (g.rp) fu = 'stopped (replied)';
+    else if (g.wa === 'follow') fu = 'message ' + nx + ' <b>due now</b>';
+    else if (g.wdt && g.sp >= 1) fu = 'message ' + nx + ' due <b>' + dfmt(addDays(g.wdt, g.sp === 1 ? (stats.followDays || 5) : (stats.finalDays || 10))) + '</b>';
     return '<div class="eye msg-label">History</div><div class="hist">' +
       kv('WhatsApp', g.wdt ? '<b>' + dfmt(g.wdt) + '</b>' + (g.wt ? ' · ' + esc(TL[g.wt] || g.wt) : '') : 'not sent') +
-      kv('Follow-up', fu) +
-      kv('Email', g.edt ? '<b>' + dfmt(g.edt) + '</b>' : (g.em ? 'sent' : 'not sent')) +
+      kv('Next WhatsApp', fu) +
+      kv('Email', g.edt ? '<b>' + dfmt(g.edt) + '</b>' + (g.es ? ' · email ' + g.es + ' of 3' : '') : (g.em ? 'sent' : 'not sent')) +
       kv('Reply', g.rpt ? esc(g.rpt) : (g.rp ? 'Replied' : '—')) +
       kv('Pipeline', g.pp ? esc(g.pp) : '—') +
     '</div>';
@@ -1174,23 +1196,23 @@
       '<div class="li-row"><div class="li-main" onclick="toggle(\'' + id + '\')">' +
         '<div class="li-name">' + (g.dnd ? '<span class="dnd">DND</span>' : '') + (opt === 'pipe' && askNum(g.ask) > 0 ? '<span class="ask">Asking ' + esc(g.ask) + '</span>' : '') + esc(g.n) +
           (g.rp && !g.pp && opt !== 'pipe' ? '<span class="badge2">Replied</span>' : '') + cbTag(g) + (g.pp && opt !== 'pipe' ? '<span class="tag-st">' + esc(g.pp) + '</span>' : '') + '</div>' +
-        '<div class="li-meta">' + (g.wa === 'follow' ? '<span class="fu">Follow-up · </span>' : '') +
+        '<div class="li-meta">' + (g.wa === 'follow' ? '<span class="fu">' + (nextWA(g) === 3 ? 'Message 3' : 'Follow-up') + ' · </span>' : '') +
           (many ? '<b style="font-weight:400;color:var(--ink)">' + g.rows.length + ' villas</b>' : esc(a.cl) + ' · <span class="unit-no">Unit ' + esc(a.u) + '</span>') +
           (g.st ? ' · ' + esc(g.st) : '') + (g.siblings && g.siblings.length > 1 ? '<span class="owns">Owns ' + g.siblings.length + ' units</span>' : '') + '</div>' +
         (many ? unitsLine(g).replace('<b>' + g.rows.length + ' villas</b> · ', '')
               : '<div class="li-spec">' + esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · ')) + '</div>') +
         nextLine + noteLine +
       '</div>' +
-      '<div class="act-row">' + waMini(g, id) + (opt === 'pipe' ? '' : mailMini(g, id)) +
-        (g.tel ? '<a class="mini call" href="tel:+' + esc(g.tel) + '">Call</a>' : '<button class="mini off" disabled>No Call</button>') +
-        (opt === 'pipe' ? (g.pp !== 'Sold' ? '<button class="mini fw" onclick="act(\'' + id + '\',\'next\')">→ ' + STAGES[STAGES.indexOf(g.pp) + 1] + '</button>' : '<button class="mini again" disabled>✓ Sold</button>') : '') + '</div>' +
+      (opt === 'pipe'
+        ? '<div class="act-row">' + waMini(g, id) + callMini(g) +
+          (g.pp !== 'Sold' ? '<button class="mini fw" onclick="act(\'' + id + '\',\'next\')">→ ' + STAGES[STAGES.indexOf(g.pp) + 1] + '</button>' : '<button class="mini again" disabled>✓ Sold</button>') + '</div>'
+        : '<div class="act-row">' + mailMini(g, id) + callMini(g) + waMini(g, id) + '</div>' + stepDots(g, id)) +
       (g._warn ? warnHtml(g, id) : '') +
       '</div>' +
       '<div class="li-panel">' + (open ? panelHtml(g, id) : '') + '</div></div>';
   }
   function panelHtml(g, id) {
     var a = g.rows[0];
-    var canWA = g.p && g.wa !== 'none';
     return (g.dnd ? '<div class="dnd-note"><b>DND</b> · This owner is tagged Do Not Disturb in your tracker.</div>' : '') +
       '<div class="panel-details">' +
         (g.rows.length === 1 ? kv('Cluster', esc(a.cl)) + kv('Unit', esc(a.u)) : '') +
@@ -1203,17 +1225,31 @@
         kv('Email', g.e ? esc(g.e) : '—') +
         kv('Tracker', '<a href="' + esc(rowUrl(a)) + '" target="_blank">Row ' + a.r + ' ↗</a>') +
       '</div>' +
-      (canWA ? '<div class="eye msg-label">WhatsApp Message' + (g.wa === 'follow' ? ' · Follow-up' : '') + '</div>' +
-               '<textarea class="msg-edit" id="msg_' + id + '">' + esc(waText(g)) + '</textarea>'
-             : (g.e ? '<div class="eye msg-label">Email</div><div class="li-msg">' + esc(mailParts(g).body) + '</div>' : '')) +
-      (id.charAt(0) === 'q' ? '<div class="tool-row" style="margin-top:10px"><button class="btn btn-line" onclick="skipG(\'' + id + '\')">Skip for Now</button>' +
-         '<button class="btn btn-line" onclick="toggle(\'' + id + '\')">Close</button></div>' : '') +
-      toolsHtml(g, id);
+      toolsHtml(g, id) +
+      '<button class="btn btn-line" style="margin-top:14px" onclick="toggle(\'' + id + '\')">Close</button>';
   }
   function otherUnits(g) {
     var by = {}; g.siblings.forEach(function (o) { (by[o.cl] = by[o.cl] || []).push(o.u); });
     return Object.keys(by).map(function (c) { return c + ' ' + by[c].join(', '); }).join(' · ');
   }
+  function callMini(g) { return g.tel ? '<a class="mini call" href="tel:+' + esc(g.tel) + '">Call</a>' : '<button class="mini off" disabled>No Call</button>'; }
+  // 1 · 2 · 3 under Email and WhatsApp: filled = sent, outlined = next one
+  function dots(done, nx, fn, id, off) {
+    return [1, 2, 3].map(function (n) {
+      return '<button class="dot' + (n <= done ? ' done' : n === nx ? ' next' : '') + '"' + (off ? ' disabled' : '') +
+        ' onclick="' + fn + '(\'' + id + '\',' + n + ')" title="' + (fn === 'mailStep' ? 'Email ' : 'WhatsApp ') + n + '">' + n + '</button>';
+    }).join('');
+  }
+  function stepDots(g, id) {
+    return '<div class="step-row"><div class="dots">' + (g.e ? dots(g.es || 0, g.es >= 3 ? 0 : nextEM(g), 'mailStep', id) : '') + '</div><div></div>' +
+      '<div class="dots">' + (g.p ? dots(g.sp || 0, g.sp >= 3 ? 0 : nextWA(g), 'waStep', id, capped()) : '') + '</div></div>';
+  }
+  function waStep(id, n) {
+    var g = groupById(id); if (!g) return;
+    var edited = $('msg_' + id) && n === nextWA(g) ? $('msg_' + id).value : null;
+    doWhatsApp(g, edited, n); if (capped()) { renderOne(); drawList(); } else redrawRow(id);
+  }
+  function mailStep(id, n) { var g = groupById(id); if (!g) return; doEmail(g, n); redrawRow(id); }
   function waMini(g, id) {
     if (!g.p) return '<button class="mini off" disabled>No WA</button>';
     var sent = g.wa === 'done';
@@ -1384,7 +1420,7 @@
   function drawResults() {
     if (!loaded) return;
     var contacted = 0, replied = 0, waC = 0, emC = 0, byT = {}, byC = {};
-    var TL = { palmiera: 'Palmiera 1–3', other: 'Other clusters', available: 'Sale / Distress', valuation: 'Not Selling check-in', handover: 'Handover support', 'follow-up': 'Follow-up' };
+    var TL = { palmiera: 'Palmiera 1–3', other: 'Other clusters', available: 'Sale / Distress', valuation: 'Not Selling check-in', handover: 'Handover support', 'follow-up': 'Follow-up', final: 'Message 3' };
     G.forEach(function (g) {
       var wa = g.rows.some(function (o) { return o.wd; }), em = g.em;
       if (!wa && !em) return;
