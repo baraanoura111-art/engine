@@ -755,7 +755,9 @@
     else t = t.replace(/\bIs villa \{unit\}/g, 'Are ' + u.phrase).replace(/\bIs Villa \{unit\}/g, 'Are ' + cap1(u.phrase).replace(/\bvillas\b/, 'Villas'))
               .replace(/\bvilla \{unit\}/g, u.phrase).replace(/\bVilla \{unit\}/g, cap1(u.phrase).replace(/\bvillas\b/, 'Villas'))
               .replace(/selling it\b/g, 'selling them').replace(/\{unit\}/g, u.list);
-    return t.replace(/\{name\}/g, g.f || fallback).replace(/\{cluster\}/g, u.cluster);
+    var home = /lavita|la vita/i.test(u.cluster) ? 'mansion' : 'villa';
+    return t.replace(/\{name\}/g, g.f || fallback).replace(/\{cluster\}/g, u.cluster)
+            .replace(/\{home\}/g, home).replace(/\{Home\}/g, home.charAt(0).toUpperCase() + home.slice(1));
   }
   function waText(g) {
     if (g.wa === 'follow') return fillG(T.followup[g.k === 'handover' ? 'handover' : 'seller'] + '\n\n' + T.waSignoff, g, 'there');
@@ -986,7 +988,7 @@
     toolBusy = true; $('tRun').disabled = true; $('tRun').textContent = '…';
     $('tOut').innerHTML = '<div class="state">Working on it… posters and PDFs can take up to a minute.</div>';
     getTicket().then(function (t) {
-      return fetch(t.url + '/run', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ text: text, ticket: t.ticket }) })
+      return fetch(t.url + '/run', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ text: text, ticket: t.ticket, lite: true }) })
         .then(function (r) { return r.json().catch(function () { throw new Error('The bot did not answer (' + r.status + '). Is it running on Railway?'); }); });
     }).then(function (res) {
       if (!res.ok) { if (/expired/i.test(res.error || '')) botT = null; throw new Error(res.error || 'The bot could not do that.'); }
@@ -1012,14 +1014,35 @@
     });
     return out.slice(0, 30);
   }
+  function pdfLater(i) {
+    var f = toolFiles[i]; if (!f || f.busy) return;
+    f.busy = true; var b = $('tpdf' + i); b.disabled = true; b.textContent = 'Getting PDF…';
+    getTicket().then(function (t) {
+      return fetch(t.url + '/file', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: f.id, ticket: t.ticket }) })
+        .then(function (r) { return r.json(); });
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || 'Could not get the PDF.');
+      f.blob = b64Blob(res.item.b64, res.item.mime); f.url = URL.createObjectURL(f.blob);
+      $('tpbox' + i).innerHTML = '<div class="two"><button class="btn btn-solid" onclick="toolShare(' + i + ')">Share</button><button class="btn btn-line" onclick="toolSave(' + i + ')">Download</button></div>';
+    }).catch(function (e) {
+      f.busy = false; b.disabled = false; b.textContent = 'Get PDF';
+      toast(/Failed to fetch|Load failed/i.test(String(e.message)) ? 'Connection dropped. Try again.' : e.message);
+    });
+  }
   function showToolItems(items) {
-    toolFiles.forEach(function (f) { try { URL.revokeObjectURL(f.url); } catch (e) {} });
+    toolFiles.forEach(function (f) { try { if (f.url) URL.revokeObjectURL(f.url); } catch (e) {} });
     toolFiles = [];
     var h = items.map(function (it) {
       if (it.type === 'text') {
         var us = unitButtons(it.text);
         return '<div class="tres"><pre>' + esc(it.text) + '</pre>' + (us.length ? '<div class="tunits">' + us.map(function (u) {
           return '<button class="chip2" onclick="toolRun(\'' + esc(u).replace(/'/g, '') + '\')">Fact sheet · ' + esc(u.split(' ').pop()) + '</button>'; }).join('') + '</div>' : '') + '</div>';
+      }
+      if (it.id && !it.b64) {                    // PDF kept on the bot until you ask for it
+        var j = toolFiles.length; toolFiles.push({ id: it.id, name: it.name, mime: it.mime });
+        return '<div class="tres"><div class="tpdf"><div class="ic">PDF</div><div><div class="nm">' + esc(it.name) +
+          '</div><div class="cap" style="margin:2px 0 0">' + esc(it.caption || '') + (it.size ? ' · ' + sizeTxt(it.size) : '') + '</div></div></div>' +
+          '<div id="tpbox' + j + '"><button class="btn btn-line" id="tpdf' + j + '" style="margin-top:0" onclick="pdfLater(' + j + ')">Get PDF</button></div></div>';
       }
       var blob = b64Blob(it.b64, it.mime), i = toolFiles.length, url = URL.createObjectURL(blob);
       toolFiles.push({ blob: blob, url: url, name: it.name, mime: it.mime });
