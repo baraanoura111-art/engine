@@ -951,7 +951,8 @@
   var shownQ = [], qSize = 20;
   function queue() {
     var f = [], n = [];
-    G.forEach(function (g) { if (skips[g.key]) return; if (g.wa === 'follow') f.push(g); else if (g.wa === 'new') n.push(g); });
+    // Follow-ups due on top, then every owner in tracker order. Contacted owners stay in the list.
+    G.forEach(function (g) { if (skips[g.key]) return; if (g.wa === 'follow') f.push(g); else n.push(g); });
     return f.concat(n);
   }
   var shownC = [];
@@ -964,9 +965,10 @@
     shownQ = all.slice(0, qSize);
     var top = cbs.length ? '<div class="sect">Call back today · ' + cbs.length + '</div><div class="list">' +
       cbs.map(function (g, i) { return rowHtml(g, 'c' + i, false); }).join('') + '</div>' : '';
-    if (!all.length) { $('main').innerHTML = top + state('<b>All Done</b>No one left to message on WhatsApp.'); return; }
+    if (!all.length) { $('main').innerHTML = top + state('<b>No Owners</b>Nothing to show.'); return; }
+    var fresh = all.filter(function (g) { return g.wa === 'new'; }).length;
     $('main').innerHTML = top +
-      '<div class="q-head"' + (cbs.length ? ' style="margin-top:14px"' : '') + '><p class="matched" style="margin:0"><b>' + all.length + '</b> units to message</p>' +
+      '<div class="q-head"' + (cbs.length ? ' style="margin-top:14px"' : '') + '><p class="matched" style="margin:0"><b>' + all.length + '</b> units · <b>' + fresh + '</b> not contacted yet</p>' +
         (Object.keys(skips).length ? '<a class="refresh" onclick="skips={};renderOne()">Show skipped</a>' : '') + '</div>' +
       (capped() ? '<div class="list-note" style="margin:0 0 10px">Daily WhatsApp limit reached. Email still works.</div>' : '') +
       '<div class="list">' + shownQ.map(function (g, i) { return rowHtml(g, 'q' + i, false); }).join('') + '</div>' +
