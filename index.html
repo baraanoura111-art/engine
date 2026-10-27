@@ -355,6 +355,7 @@
   .stage.on span { color:var(--sage); }
   .pl-head { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
   .pl-head select { flex:1; min-width:0; padding:8px 10px; font:inherit; font-size:12.5px; color:var(--ink); background:var(--surface); border:1px solid var(--box); border-radius:12px; }
+  .li-ask { margin-top:4px; font-size:13px; color:var(--muted); } .li-ask b { font-weight:400; color:var(--sage); }
   .ask { float:right; font-size:12.5px; color:var(--sage); margin-left:8px; }
   .mini.fw { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
 
@@ -1540,6 +1541,7 @@
           (g.st ? ' · ' + esc(g.st) : '') + (g.siblings && g.siblings.length > 1 ? '<span class="owns">Owns ' + g.siblings.length + ' units</span>' : '') + '</div>' +
         (many ? unitsLine(g).replace('<b>' + g.rows.length + ' villas</b> · ', '')
               : '<div class="li-spec">' + esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · ')) + '</div>') +
+        (opt !== 'pipe' && (g.k === 'available' || askNum(g.ask) > 0) && g.ask ? '<div class="li-ask">Asking <b>' + esc(askTxt(g.ask)) + '</b></div>' : '') +
         nextLine + noteLine +
       '</div>' +
       (opt === 'pipe'
@@ -1646,6 +1648,10 @@
 
   /* ---------- Pipeline tab ---------- */
   var shownP = [], pStage = 'Interested', pSort = 'cb';
+  function askTxt(v) {                // "15M" / "14,300,000" → "AED 15M" / "AED 14.3M"; text like "Not For Sale" stays as written
+    var n = askNum(v); if (!n) return String(v).trim();
+    return 'AED ' + (n >= 1e6 ? (Math.round(n / 1e5) / 10).toString().replace(/\.0$/, '') + 'M' : n.toLocaleString('en-US'));
+  }
   function askNum(v) { var t = String(v || '').toUpperCase().replace(/AED|,|\s/g, ''), n = parseFloat(t); if (isNaN(n)) return 0; return /M/.test(t) || n < 1000 ? n * 1e6 : n; }
   function lastContact(g) { return [g.wdt, g.edt].filter(Boolean).sort().pop() || ''; }
   function drawPipeline() {
