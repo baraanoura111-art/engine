@@ -1122,8 +1122,12 @@
         var g = srFind(sec.cl, r.u), i = SR.length; SR.push({ g: g, cl: clName, u: r.u });
         var ask = (r.info.match(/Ask\s+(AED\s*[\d.,]+\s*M?)/i) || [])[1] || '';
         var info = r.info.replace(/\s*·?\s*Ask\s+AED\s*[\d.,]+\s*M?/i, '');
+        var g0 = g ? srUnit(g, sec.cl, r.u) : null;
+        if (g0 && g0.vw) info = info.split(' · ').filter(function (p) { return lc(p) !== lc(g0.vw); }).join(' · ');   // view shown on its own line
         return '<div class="sr"><div class="sr-t"><b>Unit ' + esc(r.u) + '</b>' + (ask ? '<span class="sr-ask">' + esc(ask) + '</span>' : '') + '</div>' +
           '<div class="sr-i">' + esc(info) + '</div>' +
+          (g ? (function (o) { var x = [o.vw ? 'View ' + o.vw : '', askNum(o.op) > 0 ? 'Original AED ' + Math.round(askNum(o.op)).toLocaleString('en-US') : ''].filter(Boolean).join(' · ');
+                 return x ? '<div class="sr-i">' + esc(x) + '</div>' : ''; })(srUnit(g, sec.cl, r.u)) : '') +
           '<div class="sr-o">' + (g ? (g.rows[0].dev ? 'Owned by Emaar' : esc(g.n) + (g.st ? ' · ' + esc(g.st) : '')) : 'Owner not in the contact list') + '</div>' +
           '<div class="sr-b">' + (g && g.p ? '<button class="mini" onclick="srWA(' + i + ')">WhatsApp</button>' : '<button class="mini off" disabled>No WhatsApp</button>') +
             (g && g.tel ? '<a class="mini call" href="tel:+' + esc(g.tel) + '">Call</a>' : '<button class="mini off" disabled>No Call</button>') +
@@ -1131,6 +1135,7 @@
       }).join('');
     }).join('') + '</div>';
   }
+  function srUnit(g, cl, u) { return g.rows.filter(function (o) { return lc(o.cl) === lc(cl) && lc(o.u) === lc(u); })[0] || g.rows[0]; }
   function srWA(i) { var x = SR[i]; if (!x || !x.g) return; doWhatsApp(x.g); toast('WhatsApp opened · ' + x.g.n); }
   function srFact(i) { var x = SR[i]; if (!x) return; toolRun(x.cl + ' ' + x.u); }
   function unitButtons(text) {
