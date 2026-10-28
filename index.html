@@ -1121,7 +1121,7 @@
       return '<div class="td-sec" style="margin-top:12px">' + esc(clName) + ' · ' + sec.rows.length + '</div>' + sec.rows.map(function (r) {
         var g = srFind(sec.cl, r.u), i = SR.length; SR.push({ g: g, cl: clName, u: r.u });
         var ask = (r.info.match(/Ask\s+(AED\s*[\d.,]+\s*M?)/i) || [])[1] || '';
-        var info = r.info.replace(/\s*·?\s*Ask\s+AED\s*[\d.,]+\s*M?/i, '');
+        var info = r.info.replace(/\s*·?\s*Ask\s+AED\s*[\d.,]+\s*M?/i, '').replace(/\s*·?\s*OP\s+AED\s*[\d.,]+\s*M?/i, '');
         var g0 = g ? srUnit(g, sec.cl, r.u) : null;
         if (g0 && g0.vw) info = info.split(' · ').filter(function (p) { return lc(p) !== lc(g0.vw); }).join(' · ');   // view shown on its own line
         return '<div class="sr"><div class="sr-t"><b>Unit ' + esc(r.u) + '</b>' + (ask ? '<span class="sr-ask">' + esc(ask) + '</span>' : '') + '</div>' +
