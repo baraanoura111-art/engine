@@ -43,6 +43,7 @@
   .prog { border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:14px 0; margin-bottom:18px; }
   .prog-top { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
   .prog-top .count { font-size:15px; font-weight:400; }
+  .wrap > .track { margin-bottom:14px; }
   .track { height:3px; background:var(--line); border-radius:3px; overflow:hidden; }
   .track i { display:block; height:100%; width:0; background:var(--sage); transition:width .3s; }
   .sub { display:flex; justify-content:space-between; margin-top:9px; font-size:12.5px; color:var(--muted); }
@@ -548,7 +549,7 @@
     <div class="hdr-r"><span class="count" id="sToday">– / –</span><button class="icon-btn" onclick="loadAll(true)" title="Reload from the tracker" aria-label="Refresh">↻</button></div>
   </header>
   <div class="track"><i id="capBar"></i></div>
-  <div class="quick"><button class="qchip" id="qFollow" onclick="quick('follow')"><b id="sFollow">–</b> follow-ups due</button><button class="qchip" id="qNew" onclick="quick('new')"><b id="sNew">–</b> not contacted</button></div>
+  <span id="sFollow" hidden></span><span id="sNew" hidden></span>
 
 
 
@@ -1696,7 +1697,7 @@
     if (!all.length) { $('list').innerHTML = top + state('<b>No Matches</b>' + (f.q ? 'No owner or unit matches “' + esc(f.q) + '”.' : 'Try fewer filters.')); return; }
     var fresh = all.filter(function (g) { return g.wa === 'new'; }).length;
     $('list').innerHTML = top +
-      '<p class="matched"><b>' + all.length + '</b> unit' + (all.length === 1 ? '' : 's') + (plain ? ' · <b>' + fresh + '</b> not contacted yet' : ' match') +
+      '<p class="matched"><b>' + all.length + '</b> unit' + (all.length === 1 ? '' : 's') + (plain ? '' : ' match') +
         (all.length > shownF.length ? ' · showing ' + shownF.length : '') + '</p>' +
       (capped() ? '<div class="list-note" style="margin:0 0 10px">Daily WhatsApp limit reached. Email still works.</div>' : '') +
       '<div class="list">' + shownF.map(function (g, i) { return rowHtml(g, 'f' + i, false); }).join('') + '</div>' +
