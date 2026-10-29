@@ -196,6 +196,8 @@
           border:1px solid var(--box); border-radius:12px; resize:vertical; }
   .note:focus { outline:none; border-color:var(--sage); }
   .note-row { display:flex; gap:8px; align-items:flex-start; }
+  .ask-in { flex:1; min-width:0; padding:9px 12px; font:inherit; font-size:14px; color:var(--ink); background:var(--bg); border:1px solid var(--box); border-radius:12px; }
+  .ask-in:focus { outline:none; border-color:var(--sage); }
   .note-row .btn { width:auto; margin-top:0; min-height:36px; padding:0 14px; font-size:11px; }
   .units { font-size:12px; color:var(--muted); margin-top:4px; line-height:1.45; }
   .units b { color:var(--ink); font-weight:400; }
@@ -962,6 +964,17 @@
     finishGroup(g); updateStats();
     run('setReplyRows', [rowsOf(g), !!v], function () { toast(v ? '✓ Reply recorded · ' + g.n : 'Reply cleared · ' + g.n); }, 'reply');
   }
+  function askClean(v) {                   // same rule as the engine: 13 / 13m / 13,000,000 → 13M
+    var t = String(v || '').trim(); if (!t) return '';
+    var n = t.toUpperCase().replace(/AED|,|\s/g, ''), m = n.match(/^(\d+(?:\.\d+)?)(M|MN|MIL|MILLION)?$/);
+    if (m) { var x = parseFloat(m[1]); if (!m[2] && x >= 100000) x = x / 1e6; return (Math.round(x * 1000) / 1000) + 'M'; }
+    return t.slice(0, 60);
+  }
+  function doAsk(g, value, id) {
+    var was = g.ask, v = askClean(value);
+    g.ask = v; setRows(g, 'ask', v); redrawRow(id, true);
+    run('setAskingRows', [rowsOf(g), value], function () { toast(v ? '✓ Asking ' + askTxt(v) + ' · ' + g.n : '✓ Asking price cleared · ' + g.n); }, 'asking price');
+  }
   function doNote(g, text) {
     g.rows[0].nt = text;
     run('setNote', [g.rows[0].r, text], function () { toast('✓ Note saved · ' + g.n); }, 'note');
@@ -1012,7 +1025,10 @@
       '<div class="tool-row"><button class="btn btn-line" onclick="act(\'' + id + '\',\'val\')">Valuation Report</button>' +
         '<button class="btn btn-line" onclick="act(\'' + id + '\',\'fact\')">Fact Sheet</button></div>' +
       '<div id="val_' + id + '"></div>' +
-      '<div class="note-row"><textarea class="note" id="note_' + id + '" placeholder="Note (saved in Listing/Notes)">' + esc(g.rows[0].nt || '') + '</textarea>' +
+      '<div class="eye msg-label">Asking Price</div>' +
+      '<div class="note-row"><input class="ask-in" id="ask_' + id + '" value="' + esc(g.ask || '') + '" placeholder="e.g. 13M" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();act(\'' + id + '\',\'ask\')}">' +
+      '<button class="btn btn-line" onclick="act(\'' + id + '\',\'ask\')">Save</button></div>' +
+      '<div class="note-row" style="margin-top:10px"><textarea class="note" id="note_' + id + '" placeholder="Note (saved in Listing/Notes)">' + esc(g.rows[0].nt || '') + '</textarea>' +
       '<button class="btn btn-line" onclick="act(\'' + id + '\',\'note\')">Save</button></div>' +
     '</div>';
   }
@@ -1026,6 +1042,7 @@
     else if (what === 'stage') doStage(g, g.pp === arg ? '' : arg);
     else if (what === 'next') { doStage(g, STAGES[Math.min(STAGES.indexOf(g.pp) + 1, STAGES.length - 1)]); drawPipeline(); return; }
     else if (what === 'note') { doNote(g, $('note_' + id).value); return; }
+    else if (what === 'ask') { doAsk(g, $('ask_' + id).value, id); return; }
     else if (what === 'val') { openValuation(g, id); return; }
     else if (what === 'fact') { var u = unitOf(g); toolRun(u.cluster + ' ' + u.unit); return; }
     redrawRow(id);
