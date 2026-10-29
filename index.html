@@ -530,6 +530,12 @@
   .inq-b .mini.off { color:var(--muted); }
   .inq-b .mini.pri { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
   .inq-res { margin-top:10px; }
+  .sr-pick { display:flex; align-items:center; gap:10px; min-height:40px; font-size:12px; letter-spacing:.08em; color:var(--sage); cursor:pointer; }
+  .sr-pick input { width:20px; height:20px; accent-color:var(--sage-btn); }
+  .sl-bar { position:sticky; bottom:calc(76px + env(safe-area-inset-bottom)); z-index:3; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; padding:10px 12px; background:var(--surface); border:1px solid var(--sage); border-radius:12px; font-size:13px; color:var(--ink); }
+  .sl-bar .mini { width:auto; min-width:150px; height:44px; padding:0 14px; }
+  .sl-bar .mini.pri { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
+  .li-name .pin { margin-right:6px; font-size:12px; }
   @media (max-width:340px) { .inq-b { grid-template-columns:1fr 1fr; } .inq-b .mini.pri { grid-column:1 / -1; } .inq-two { grid-template-columns:1fr; } }
   .inq.done .inq-top b, .inq.done .inq-req { color:var(--muted); }
   @media (max-width:340px) { .act-row .mini, .act-row a.mini { font-size:9.5px; letter-spacing:.02em; padding:0 2px; } .mini .stp { margin-left:3px; padding:0 3px; font-size:9px; } .qchip { font-size:12px; } }
@@ -579,7 +585,7 @@
   <div id="main" style="display:none"></div>
   <div id="listView">
     <div class="fbar">
-      <input class="search" id="q" placeholder="Search name, cluster or unit" oninput="searchSoon()">
+      <input class="search" id="q" placeholder="Search name, cluster, unit or phone" oninput="searchSoon()">
       <button class="fbtn" id="fToggle" onclick="togglePanel()">Filters</button>
     </div>
     <div class="fpanel" id="fpanel">
@@ -914,12 +920,22 @@
   }
 
   /* ---------- Load ---------- */
-  var DKEY = 'oasisData';
+  var DKEY = 'oasisData', PINS = [], shownN = [];
+  function pinKey(g) { var a = g.rows[0]; return a.cl + '|' + a.u; }
+  function isPinned(g) { return PINS.indexOf(pinKey(g)) !== -1; }
+  function togglePin(id) {
+    var g = groupById(id); if (!g) return; var k = pinKey(g), was = isPinned(g);
+    if (!was && PINS.length >= 5) { toast('You can pin up to 5 owners. Unpin one first.'); return; }
+    PINS = was ? PINS.filter(function (x) { return x !== k; }) : PINS.concat([k]);
+    try { var c = JSON.parse(localStorage.getItem(DKEY) || 'null'); if (c) { c.pins = PINS; localStorage.setItem(DKEY, JSON.stringify(c)); } } catch (e) {}
+    drawList(); if (mode === 'pipe') drawPipeline();
+    run('setPins', [PINS], function () { toast(was ? 'Unpinned · ' + g.n : '📌 Pinned to the top · ' + g.n); }, 'pin');
+  }
   function applyData(d, fromCache) {
     var F = d.fields;
     var openKey = (function () { var el = document.querySelector('#list .li.open'); if (!el) return ''; var g = groupById(el.id.replace('li_', '')); return g ? g.key : ''; })();
     O = d.owners.map(function (a) { var o = {}; for (var i = 0; i < F.length; i++) o[F[i]] = a[i]; return o; });
-    T = d.tpl; stats = d.stats; sheetUrl = d.sheetUrl; VIEWS = d.views; loaded = true; current = null;
+    PINS = d.pins || []; T = d.tpl; stats = d.stats; sheetUrl = d.sheetUrl; VIEWS = d.views; loaded = true; current = null;
     buildGroups(); buildOptions(); updateStats();
     renderOne(); if (mode === 'pipe') drawPipeline(); if (mode === 'res') drawResults();
     if (openKey) { var i = shownF.map(function (g) { return g.key; }).indexOf(openKey); if (i !== -1) redrawRow('f' + i, true); }
@@ -1217,7 +1233,7 @@
         '<button class="btn btn-line" onclick="act(\'' + id + '\',\'note\')">Save</button></div>') +
     '</div>';
   }
-  function groupById(id) { var c = id.charAt(0); return (c === 'q' ? shownQ : c === 'p' ? shownP : c === 'c' ? shownC : shownF)[Number(id.slice(1))]; }
+  function groupById(id) { var c = id.charAt(0); return (c === 'q' ? shownQ : c === 'p' ? shownP : c === 'c' ? shownC : c === 'n' ? shownN : shownF)[Number(id.slice(1))]; }
   function act(id, what, arg) {
     var g = groupById(id); if (!g) return;
     var UNDO = { status: 'status', reply: 'reply', cb: 'cb', stage: 'stage', next: 'stage', ask: 'ask' };
@@ -1327,7 +1343,7 @@
     var c = lc(cl), x = lc(u);
     return G.filter(function (g) { return g.rows.some(function (o) { return lc(o.cl) === c && lc(o.u) === x; }); })[0] || null;
   }
-  function searchList(text) {
+  function searchList(text, pick) {
     var lines = text.split('\n'), cl = '', head = [], secs = [], cur = null, units = 0;
     lines.forEach(function (ln) {
       var t = ln.trim(), m = t.match(/^•\s*Unit\s+([A-Za-z0-9-]+)\s*·?\s*(.*)$/);
@@ -1345,7 +1361,8 @@
         var info = r.info.replace(/\s*·?\s*Ask\s+AED\s*[\d.,]+\s*M?/i, '').replace(/\s*·?\s*OP\s+AED\s*[\d.,]+\s*M?/i, '');
         var g0 = g ? srUnit(g, sec.cl, r.u) : null;
         if (g0 && g0.vw) info = info.split(' · ').filter(function (p) { return lc(p) !== lc(g0.vw); }).join(' · ');   // view shown on its own line
-        return '<div class="sr"><div class="sr-t"><b>Unit ' + esc(r.u) + '</b>' + (ask ? '<span class="sr-ask">' + esc(ask) + '</span>' : '') + '</div>' +
+        return '<div class="sr">' + (pick ? '<label class="sr-pick"><input type="checkbox" data-i="' + i + '" onchange="inqPick(\'' + esc(pick) + '\',' + i + ',this)"><span>Add to shortlist</span></label>' : '') +
+          '<div class="sr-t"><b>Unit ' + esc(r.u) + '</b>' + (ask ? '<span class="sr-ask">' + esc(ask) + '</span>' : '') + '</div>' +
           '<div class="sr-i">' + esc(info) + '</div>' +
           (g ? (function (o) { var x = [o.vw ? 'View ' + o.vw : '', askNum(o.op) > 0 ? 'Original AED ' + Math.round(askNum(o.op)).toLocaleString('en-US') : ''].filter(Boolean).join(' · ');
                  return x ? '<div class="sr-i">' + esc(x) + '</div>' : ''; })(srUnit(g, sec.cl, r.u)) : '') +
@@ -1444,7 +1461,7 @@
   }
 
   /* ---------- Inquiries: client requests, with matching villas from the bot search ---------- */
-  var INQ = null, inqTmp = 0, inqRes = {};
+  var INQ = null, inqTmp = 0, inqRes = {}, inqSel = {}, inqLink = {};
   function loadInq() {
     drawInq();
     google.script.run.withSuccessHandler(function (l) { INQ = l || []; drawInq(); })
@@ -1456,7 +1473,9 @@
     INQ = INQ || []; var tmp = { id: 'tmp' + (++inqTmp), client: c, phone: ph, wa: ph.replace(/\D/g, ''), req: r, a: stats.today, d: 0 };
     INQ.unshift(tmp); $('inqClient').value = ''; $('inqPhone').value = ''; $('inqReq').value = '';
     google.script.run.withSuccessHandler(function (x) {
-      var old = tmp.id; tmp.id = x.id; tmp.wa = x.wa; if (inqRes[old] !== undefined) { inqRes[x.id] = inqRes[old]; delete inqRes[old]; }
+      var old = tmp.id; tmp.id = x.id; tmp.wa = x.wa;
+      [inqRes, inqSel].forEach(function (m) { if (m[old] !== undefined) { m[x.id] = m[old]; delete m[old]; } });
+      if (inqRes[x.id]) inqRes[x.id] = inqRes[x.id].split("inqPick('" + old + "'").join("inqPick('" + x.id + "'");
       if (tmp.gone) run('deleteInquiry', [x.id]); else if (tmp.d) run('setInquiryDone', [x.id, true]); drawInq();
     }).withFailureHandler(function (e) { INQ = INQ.filter(function (y) { return y !== tmp; }); drawInq(); toast('Not saved: ' + (e.message || e)); }).addInquiry(c, ph, r);
     inqMatch(tmp.id);
@@ -1473,23 +1492,68 @@
     var x = inqFind(id); if (!x) return;
     inqRes[id] = state('Searching…'); drawInq();
     botAsk(x.req).then(function (items) {
-      var h = items.map(function (it) { return it.type === 'text' ? (searchList(it.text) || '<div class="tres"><pre>' + esc(it.text) + '</pre></div>') : ''; }).join('');
+      inqSel[x.id] = [];
+      var h = items.map(function (it) { return it.type === 'text' ? (searchList(it.text, x.id) || '<div class="tres"><pre>' + esc(it.text) + '</pre></div>') : ''; }).join('');
       inqRes[x.id] = h || state('<b>No reply</b>The bot had nothing for that request.'); drawInq();
     }).catch(function (e) { inqRes[x.id] = state('<b>Not done</b>' + esc(String((e && e.message) || e))); drawInq(); });
+  }
+  /* Shortlist: tick matching villas, the bot builds one PDF (fact sheet, map, floor plan per villa),
+     it is saved to Drive with a view-only link and sent to the client on WhatsApp. No owner details. */
+  function shortBar(x) {
+    var n = (inqSel[x.id] || []).length, L = inqLink[x.id];
+    if (L && L.url) return '<div class="sl-bar"><span>Shortlist ready · ' + L.n + ' villa' + (L.n === 1 ? '' : 's') + '</span><button class="mini pri" onclick="slSend(\'' + esc(x.id) + '\')">Send on WhatsApp</button></div>';
+    if (L && L.busy) return '<div class="sl-bar"><span>Making the shortlist PDF…</span><button class="mini" disabled>Please wait</button></div>';
+    if (!n) return '';
+    return '<div class="sl-bar"><span>' + n + ' selected</span><button class="mini pri" onclick="slMake(\'' + esc(x.id) + '\')">Send Shortlist</button></div>';
+  }
+  function inqPick(id, i, el) {
+    var sel = inqSel[id] = inqSel[id] || [];
+    if (el.checked) { if (sel.length >= 8) { el.checked = false; toast('A shortlist can have up to 8 villas'); return; } if (sel.indexOf(i) === -1) sel.push(i); }
+    else inqSel[id] = sel.filter(function (j) { return j !== i; });
+    delete inqLink[id];
+    var x = inqFind(id), box = x && document.querySelector('#inq_' + id + ' .sl-slot'); if (box) box.innerHTML = shortBar(x);
+  }
+  function slMake(id) {
+    var x = inqFind(id), sel = inqSel[id] || []; if (!x || !sel.length) return;
+    var refs = sel.map(function (i) { return SR[i]; }).filter(Boolean);
+    var text = refs.map(function (r, k) { return (k && refs[k - 1].cl === r.cl ? '' : r.cl.toLowerCase() + ' ') + r.u; }).join(' & ');
+    inqLink[id] = { busy: true }; slDraw(id);
+    botAsk(text).then(function (items) {
+      var doc = items.filter(function (it) { return it.type === 'document' && it.id; })[0];
+      if (!doc) { var t = items.filter(function (it) { return it.type === 'text'; }).map(function (it) { return it.text; }).join(' '); throw new Error(t || 'The bot did not make a PDF.'); }
+      return getTicket().then(function (t) {
+        return fetch(t.url + '/file', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: doc.id, ticket: t.ticket }) }).then(function (r) { return r.json(); });
+      });
+    }).then(function (res) {
+      if (!res.ok || !res.item || !res.item.b64) throw new Error(res.error || 'Could not get the PDF.');
+      return new Promise(function (ok, bad) { google.script.run.withSuccessHandler(ok).withFailureHandler(bad).saveShortlist(res.item.b64, x.client); });
+    }).then(function (f) {
+      var n = sel.length; inqLink[id] = { url: f.url, n: n }; slDraw(id); toast('✓ Shortlist saved to Drive · Oasis Shortlists');
+    }).catch(function (e) { delete inqLink[id]; slDraw(id); toast('Shortlist not made: ' + String((e && e.message) || e)); });
+  }
+  function slDraw(id) { var x = inqFind(id), box = x && document.querySelector('#inq_' + id + ' .sl-slot'); if (box) box.innerHTML = shortBar(x); }
+  function slSend(id) {
+    var x = inqFind(id), L = inqLink[id]; if (!x || !L || !L.url) return;
+    var f = (x.client || '').trim().split(/\s+/)[0] || 'there';
+    var msg = 'Hi ' + f + ', this is Baraa, The Oasis Specialist.\nAs promised, here is a shortlist of ' + L.n + ' villa' + (L.n === 1 ? '' : 's') + ' in The Oasis that match what you\'re looking for, with the fact sheet, location and floor plan for each:\n' + L.url +
+      '\n\nHappy to arrange viewings or answer any questions.\n\nThanks,\nBaraa\n\nbaraanoura.com';
+    window.open(waUrl(x.wa || '', msg), '_blank');
+    if (!x.wa) toast('No phone on this inquiry · pick the chat in WhatsApp');
   }
   function drawInq() {
     if (!INQ) { $('inqList').innerHTML = state('Loading…'); return; }
     var open = INQ.filter(function (x) { return !x.d; }), done = INQ.filter(function (x) { return x.d; });
     var card = function (x) {
       var q = '\'' + esc(x.id) + '\'';
-      return '<div class="inq' + (x.d ? ' done' : '') + '"><div class="inq-top"><div><b>' + esc(x.client || 'Client') + '</b><span>' + esc([x.phone, dfmt(x.a)].filter(Boolean).join(' · ')) + '</span></div>' +
+      return '<div class="inq' + (x.d ? ' done' : '') + '" id="inq_' + esc(x.id) + '"><div class="inq-top"><div><b>' + esc(x.client || 'Client') + '</b><span>' + esc([x.phone, dfmt(x.a)].filter(Boolean).join(' · ')) + '</span></div>' +
         '<button class="td-x" onclick="inqDel(' + q + ')" title="Delete" aria-label="Delete">×</button></div>' +
         '<div class="inq-req">' + esc(x.req) + '</div>' +
         '<div class="inq-b"><button class="mini pri" onclick="inqMatch(' + q + ')">' + (inqRes[x.id] ? 'Search Again' : 'See Matching Villas') + '</button>' +
           (x.wa ? '<button class="mini" onclick="inqWA(' + q + ')">WhatsApp</button>' : '<button class="mini off" disabled>No Phone</button>') +
           '<button class="mini" onclick="inqDone(' + q + ')">' + (x.d ? 'Reopen' : 'Done') + '</button></div>' +
-        (inqRes[x.id] ? '<div class="inq-res">' + inqRes[x.id] + '</div>' : '') + '</div>';
+        (inqRes[x.id] ? '<div class="inq-res">' + inqRes[x.id] + '</div>' : '') + '<div class="sl-slot">' + shortBar(x) + '</div></div>';
     };
+    setTimeout(function () { Object.keys(inqSel).forEach(function (k) { (inqSel[k] || []).forEach(function (i) { var cb = document.querySelector('#inqList input[data-i="' + i + '"]'); if (cb) cb.checked = true; }); }); }, 0);
     $('inqList').innerHTML = '<div class="td-sec">Open · ' + open.length + '</div>' + (open.length ? open.map(card).join('') : '<div class="list-note" style="text-align:left">No open inquiries. Add one above.</div>') +
       (done.length ? '<div class="td-sec" style="margin-top:28px">Done · ' + done.length + '</div>' + done.map(card).join('') : '');
   }
@@ -1780,6 +1844,11 @@
   }
   // Search: name, cluster and unit together, e.g. "ahmed", "lavita", "palmiera 1 17", "mareva 2 ahmed", "17"
   function searchMatch(o, q) {
+    var qd = q.replace(/[\s+\-().]/g, '');
+    if (/^\d{5,}$/.test(qd)) {                          // a phone number, or part of one: +971 50…, 050…, 00971…
+      qd = qd.replace(/^00/, '').replace(/^0(?=[1-9])/, '');
+      return [o.p, o.p2, o.tel].some(function (n) { return n && String(n).replace(/\D/g, '').indexOf(qd) !== -1; });
+    }
     var cl = lc(o.cl), rest = q;
     if (q.indexOf(cl) === 0 && (q.length === cl.length || q.charAt(cl.length) === ' ')) rest = q.slice(cl.length);
     else if (cl.indexOf(q) === 0) rest = '';
@@ -1831,11 +1900,14 @@
     fb.textContent = n ? 'Filters · ' + n : 'Filters'; fb.className = 'fbtn' + (n ? ' on' : '');
     var plain = !n && !f.q, top = '', all;
     if (plain) {                       // no search or filters: call-backs due, then follow-ups due, then everyone in tracker order
-      var cbs = G.filter(cbDue).sort(function (a, b) { return a.cb < b.cb ? -1 : 1; }), cbIds = {};
+      var pinIds = {}; shownN = PINS.map(function (k) { return G.filter(function (g) { return pinKey(g) === k; })[0]; }).filter(Boolean);
+      shownN.forEach(function (g) { pinIds[g.key] = 1; });
+      var cbs = G.filter(function (g) { return cbDue(g) && !pinIds[g.key]; }).sort(function (a, b) { return a.cb < b.cb ? -1 : 1; }), cbIds = {};
       shownC = cbs; cbs.forEach(function (g) { cbIds[g.key] = 1; });
-      top = cbs.length ? '<div class="sect">Call back today · ' + cbs.length + '</div><div class="list">' +
-        cbs.map(function (g, i) { return rowHtml(g, 'c' + i, false); }).join('') + '</div><div style="height:14px"></div>' : '';
-      all = queue().filter(function (g) { return !cbIds[g.key]; });
+      top = (shownN.length ? '<div class="sect">Pinned · ' + shownN.length + '</div><div class="list">' +
+        shownN.map(function (g, i) { return rowHtml(g, 'n' + i, false); }).join('') + '</div><div style="height:14px"></div>' : '') + (cbs.length ? '<div class="sect">Call back today · ' + cbs.length + '</div><div class="list">' +
+        cbs.map(function (g, i) { return rowHtml(g, 'c' + i, false); }).join('') + '</div><div style="height:14px"></div>' : '');
+      all = queue().filter(function (g) { return !cbIds[g.key] && !pinIds[g.key]; });
     } else {                           // search / filters: matches in tracker order (Emaar units only when searching)
       shownC = [];
       all = (f.q ? G.concat(GD) : G).filter(function (g) { return matchesG(g, f); });
@@ -1865,7 +1937,7 @@
     return '<div class="li' + (g.dnd ? ' is-dnd' : '') + (open ? ' open' : '') + '" id="li_' + id + '">' +
       '<div class="li-row"><div class="li-main" onclick="toggle(\'' + id + '\')">' +
         '<div class="li-name">' + (g.rows[0].dev ? '<span class="emaar">Emaar</span>' : '') + (g.dnd ? '<span class="dnd">DND</span>' : '') + (opt === 'pipe' && askNum(g.ask) > 0 ? '<span class="ask">Asking ' + esc(g.ask) + '</span>' : '') + esc(g.n) +
-          (g.rp && !g.pp && opt !== 'pipe' ? '<span class="badge2">Replied</span>' : '') + cbTag(g) + (g.pp && opt !== 'pipe' ? '<span class="tag-st">' + esc(g.pp) + '</span>' : '') + '</div>' +
+          (isPinned(g) ? '<span class="pin" title="Pinned">📌</span>' : '') + (g.rp && !g.pp && opt !== 'pipe' ? '<span class="badge2">Replied</span>' : '') + cbTag(g) + (g.pp && opt !== 'pipe' ? '<span class="tag-st">' + esc(g.pp) + '</span>' : '') + '</div>' +
         '<div class="li-meta">' + (g.wa === 'follow' ? '<span class="fu">' + (nextWA(g) === 3 ? 'Message 3' : 'Follow-up') + ' · </span>' : '') +
           (many ? '<b style="font-weight:400;color:var(--ink)">' + g.rows.length + ' villas</b>' : esc(a.cl) + ' · <span class="unit-no">Unit ' + esc(a.u) + '</span>') +
           (g.st ? ' · ' + esc(g.st) : '') + (g.siblings && g.siblings.length > 1 ? '<span class="owns">Owns ' + g.siblings.length + ' units</span>' : '') + '</div>' +
@@ -1889,7 +1961,8 @@
       (g.p2 ? '<div class="list-note" style="margin:10px 0 0;text-align:left">Second number +' + esc(g.p2) +
           ' · <a onclick="waSecond(\'' + id + '\')">WhatsApp</a> · <a href="tel:+' + esc(g.p2) + '">Call</a></div>' : '') +
       toolsHtml(g, id) +
-      '<button class="btn btn-line" style="margin-top:14px" onclick="toggle(\'' + id + '\')">Close</button>';
+      (g.rows[0].dev ? '' : '<button class="btn btn-line pin-btn" style="margin-top:14px" onclick="togglePin(\'' + id + '\')">' + (isPinned(g) ? 'Unpin' : 'Pin to Top') + '</button>') +
+      '<button class="btn btn-line" style="margin-top:8px" onclick="toggle(\'' + id + '\')">Close</button>';
   }
   function otherUnits(g) {
     var by = {}; g.siblings.forEach(function (o) { (by[o.cl] = by[o.cl] || []).push(o.u); });
