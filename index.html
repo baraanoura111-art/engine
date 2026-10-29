@@ -416,6 +416,99 @@
   .toast { position:sticky; bottom:0; text-align:center; font-size:12.5px; color:var(--sage); min-height:18px; margin-top:10px; padding:6px 0; background:var(--bg); letter-spacing:.04em; z-index:2; }
   .foot { text-align:center; margin-top:18px; font-size:10.5px; letter-spacing:.28em; color:var(--muted); text-transform:uppercase; }
   .foot b { color:var(--sage); font-weight:400; }
+
+  /* ===== UX round: slim header, bottom tabs, bigger taps, clearer borders ===== */
+  :root { --box:#5D6C61; --line:#2E2A25; }
+  .wrap { padding:calc(10px + env(safe-area-inset-top, 0px)) 16px calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .hdr { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0 10px; }
+  .hdr .logo { text-align:left; } .hdr .logo svg { width:104px; }
+  .hdr-r { display:flex; align-items:center; gap:4px; }
+  .hdr-r .count { font-size:15px; font-weight:400; white-space:nowrap; }
+  .icon-btn { width:44px; height:44px; border:0; background:transparent; color:var(--sage); font-size:20px; cursor:pointer; border-radius:12px; }
+  .icon-btn:hover { background:var(--surface); }
+  .quick { display:flex; gap:8px; margin:10px 0 14px; }
+  .qchip { flex:1; min-height:44px; border:1px solid var(--box); border-radius:12px; background:transparent; color:var(--muted); font:300 13px var(--body); cursor:pointer; padding:0 8px; }
+  .qchip b { color:var(--ink); font-weight:400; }
+  .qchip.on { border-color:var(--sage); background:rgba(175,194,171,.10); color:var(--sage); }
+  .qbar { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:0 0 10px; padding:8px 12px; border:1px solid var(--sage); border-radius:12px; color:var(--sage); font-size:13px; }
+  .qbar button { border:0; background:transparent; color:var(--ink); font:400 12px var(--body); cursor:pointer; min-height:32px; }
+  /* bottom tab bar */
+  .bnav { position:fixed; left:0; right:0; bottom:0; z-index:40; background:rgba(13,12,11,.96); border-top:1px solid var(--line);
+          padding-bottom:env(safe-area-inset-bottom, 0px); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+  .bnav-in { max-width:440px; margin:0 auto; display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); }
+  .bnav button { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:58px; border:0; background:transparent;
+                 color:var(--muted); font:400 10.5px var(--body); letter-spacing:.04em; cursor:pointer; padding:6px 0 4px; }
+  .bnav svg { width:23px; height:23px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .bnav button.on { color:var(--sage); }
+  .bnav button.on::before { content:''; position:absolute; top:0; left:28%; right:28%; height:2px; border-radius:2px; background:var(--sage); }
+  .bnav .tcount { position:absolute; top:6px; left:calc(50% + 6px); margin:0; }
+  /* bottom sheets */
+  .sheet-bg { display:none; position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.55); }
+  .sheet-bg.open { display:block; }
+  .sheet { position:fixed; left:0; right:0; bottom:0; z-index:51; max-width:440px; margin:0 auto; background:var(--surface); border:1px solid var(--box); border-bottom:0;
+           border-radius:18px 18px 0 0; padding:10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); transform:translateY(105%); transition:transform .22s ease; max-height:86vh; overflow:auto; }
+  .sheet.open { transform:none; }
+  .grab { width:40px; height:4px; border-radius:2px; background:var(--box); margin:2px auto 14px; }
+  .sheet h4 { margin:0; font-weight:400; font-size:16px; color:var(--ink); }
+  .sheet .sub2 { font-size:12.5px; color:var(--muted); margin:2px 0 10px; }
+  .sheet-opt { display:block; width:100%; text-align:left; min-height:60px; padding:12px 4px; border:0; border-top:1px solid var(--line); background:transparent; cursor:pointer; color:var(--ink); font:inherit; }
+  .sheet-opt b { display:block; font-weight:400; font-size:15px; } .sheet-opt span { font-size:12.5px; color:var(--muted); }
+  .sheet-opt.on b { color:var(--sage); }
+  .sheet-foot { border-top:1px solid var(--line); margin-top:4px; padding-top:10px; font-size:13px; color:var(--muted); }
+  .sheet-foot a { color:var(--sage); cursor:pointer; }
+  .sheet-foot label { display:flex; align-items:center; gap:10px; min-height:44px; cursor:pointer; }
+  .st-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line); }
+  .st-n { flex:none; width:30px; height:30px; border-radius:50%; border:1px solid var(--box); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--muted); }
+  .st-row.done .st-n { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
+  .st-row.next .st-n { border-color:var(--sage); color:var(--sage); }
+  .st-t { flex:1; min-width:0; } .st-t b { display:block; font-weight:400; font-size:15px; color:var(--ink); } .st-t span { font-size:12.5px; color:var(--muted); }
+  .st-row.next .st-t span { color:var(--sage); }
+  .st-go { flex:none; min-width:88px; min-height:44px; border-radius:12px; border:1px solid var(--box); background:transparent; color:var(--ink);
+           font:400 11.5px var(--body); letter-spacing:.1em; text-transform:uppercase; cursor:pointer; }
+  .st-row.next .st-go { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
+  .st-go:disabled { opacity:.4; cursor:default; }
+  .st-note { font-size:12.5px; color:#F2D9AE; margin-top:8px; }
+  /* owner rows: calmer buttons, only the next step is solid */
+  .act-row .mini, .act-row a.mini { height:44px; font-size:11px; letter-spacing:.08em; background:transparent; color:var(--ink); border-color:var(--box); }
+  .act-row .mini.pri { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
+  .act-row .mini.off { opacity:.45; }
+  .mini .stp { display:inline-block; margin-left:6px; padding:0 5px; border:1px solid currentColor; border-radius:7px; font-size:9.5px; letter-spacing:0; line-height:14px; opacity:.85; }
+  .li-row { padding:14px 0 12px; }
+  .li-name { font-size:15px; }
+  .li-meta { font-size:12.5px; } .li-spec { font-size:12px; opacity:.9; }
+  /* open card: folded sections */
+  .acc { border-top:1px solid var(--line); }
+  .acc:first-child { border-top:0; }
+  .acc-h { display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; min-height:50px; padding:0 2px; border:0; background:transparent; cursor:pointer; color:var(--ink); font:inherit; text-align:left; }
+  .acc-h span { font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--sage); }
+  .acc-h i { font-style:normal; font-size:13px; color:var(--muted); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:62%; }
+  .acc-h i::after { content:' ›'; color:var(--box); }
+  .acc.open .acc-h i::after { content:' ⌄'; }
+  .acc-b { display:none; padding:2px 0 14px; }
+  .acc.open .acc-b { display:block; }
+  .acc-b .chips2 { margin:2px 0 4px; }
+  .acc-b .tool-row { margin:8px 0 0; }
+  .li.open .li-panel { padding-top:4px; }
+  /* bigger taps and readable labels everywhere */
+  .chip2 { min-height:40px; padding:8px 14px; font-size:11.5px; letter-spacing:.08em; }
+  .eye { font-size:11.5px; letter-spacing:.26em; }
+  .kv span:first-child { font-size:11.5px; letter-spacing:.16em; }
+  .btn-line, .tool-row .btn, .note-row .btn, .cb-date .btn { min-height:44px; font-size:12.5px; }
+  .ask-in, .cb-date input, .note { min-height:44px; font-size:14px; }
+  .fbtn { min-height:44px; font-size:11.5px; } input.search { min-height:44px; font-size:14px; }
+  .ms-btn, .fgrid input { min-height:42px; font-size:13.5px; } .fgrid label.fl { font-size:11px; }
+  .seg button { min-height:44px; font-size:11.5px; letter-spacing:.12em; }
+  .lead .lb .mini, .sr-b .mini { height:44px; font-size:11px; }
+  .doc .da .mini { height:40px; font-size:11px; min-width:64px; }
+  .td-chk { width:30px; height:30px; } .td-x { min-width:44px; min-height:44px; font-size:20px; }
+  .lk-del { width:30px; height:30px; top:-9px; right:-9px; font-size:16px; }
+  .stage span { font-size:10.5px; } .stage { padding:10px 2px; }
+  .kpi span { font-size:11px; } .bars-x { font-size:11.5px; }
+  .tcount { font-size:10px; line-height:16px; }
+  .toast { position:fixed; left:0; right:0; bottom:calc(64px + env(safe-area-inset-bottom, 0px)); margin:0 auto; max-width:440px; z-index:45; background:rgba(13,12,11,.92); pointer-events:none; }
+  .toast:empty { display:none; }
+  .opt { display:none; }
+  @media (max-width:340px) { .act-row .mini, .act-row a.mini { font-size:9.5px; letter-spacing:.02em; padding:0 2px; } .mini .stp { margin-left:3px; padding:0 3px; font-size:9px; } .qchip { font-size:12px; } }
 </style>
 </head>
 <body>
@@ -439,6 +532,7 @@
   <div id="loginMsg"></div>
 </form></div>
 <div class="wrap">
+  <header class="hdr">
   <div class="logo">
     <svg viewBox="0 0 360 160" role="img" aria-label="The Oasis Specialist">
       <text x="180" y="30" text-anchor="middle" class="lg-small">THE</text>
@@ -451,15 +545,12 @@
       <text x="180" y="152" text-anchor="middle" class="lg-small">SPECIALIST</text>
     </svg>
   </div>
-  <div class="title"><div class="eye">Owner Outreach</div><div class="rule"></div></div>
+    <div class="hdr-r"><span class="count" id="sToday">– / –</span><button class="icon-btn" onclick="loadAll(true)" title="Reload from the tracker" aria-label="Refresh">↻</button></div>
+  </header>
+  <div class="track"><i id="capBar"></i></div>
+  <div class="quick"><button class="qchip" id="qFollow" onclick="quick('follow')"><b id="sFollow">–</b> follow-ups due</button><button class="qchip" id="qNew" onclick="quick('new')"><b id="sNew">–</b> not contacted</button></div>
 
-  <div class="prog">
-    <div class="prog-top"><span class="eye">Today <a class="refresh" onclick="loadAll(true)" title="Reload from the tracker">↻ Refresh</a></span><span class="count" id="sToday">– / –</span></div>
-    <div class="track"><i id="capBar"></i></div>
-    <div class="sub"><span><b id="sFollow">–</b> follow-ups due</span><span><b id="sNew">–</b> units left</span></div>
-  </div>
 
-  <div class="tabs seven"><button id="tList" class="on" onclick="tab('list')">Contacts</button><button id="tPipe" onclick="tab('pipe')">Pipeline</button><button id="tLeads" onclick="tab('leads')">Leads<span class="tcount" id="leadCount"></span></button><button id="tTools" onclick="tab('tools')">Tools</button><button id="tTodo" onclick="tab('todo')">To Do</button><button id="tRes" onclick="tab('res')">Results</button></div>
 
   <div id="main" style="display:none"></div>
   <div id="listView">
@@ -506,6 +597,11 @@
     </div>
   </div>
 
+  <nav class="bnav" id="bnav"><div class="bnav-in"><button id="tList" class="on" onclick="tab('list')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-3.8 3.9-6 7.5-6s6.7 2.2 7.5 6"/></svg><span>Contacts</span></button><button id="tPipe" onclick="tab('pipe')"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>Pipeline</span></button><button id="tLeads" onclick="tab('leads')"><svg viewBox="0 0 24 24"><path d="M3.5 13.5 6 5.5h12l2.5 8v5h-17z"/><path d="M3.5 13.5h5l1.3 2.2h4.4l1.3-2.2h5"/></svg><span>Leads</span><span class="tcount" id="leadCount"></span></button><button id="tTools" onclick="tab('tools')"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg><span>Tools</span></button><button id="tMore" onclick="toggleMore()"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18.5" cy="12" r="1.4"/></svg><span>More</span></button></div></nav>
+  <div class="sheet-bg" id="moreBg" onclick="toggleMore(false)"></div>
+  <div class="sheet" id="moreSheet"><div class="grab"></div><button class="sheet-opt" id="tTodo" onclick="toggleMore(false);tab('todo')"><b>To Do</b><span>Your task list</span></button><button class="sheet-opt" id="tRes" onclick="toggleMore(false);tab('res')"><b>Results</b><span>Contacted, replies, last 14 days</span></button><div class="sheet-foot" id="moreFoot"></div></div>
+  <div class="sheet-bg" id="stepBg" onclick="closeSteps()"></div>
+  <div class="sheet" id="stepSheet"></div>
   <div class="toast" id="toast"></div>
   <label class="opt" id="deskWrap"><input type="checkbox" id="desktop"> Open in WhatsApp Desktop app</label>
   <div class="foot"><b>baraanoura.com</b> · @baraa.oasis<div id="who"></div></div>
@@ -824,6 +920,7 @@
     g.es = Math.max.apply(null, R.map(function (o) { return o.es || 0; }));
     g.wt = (R.filter(function (o) { return o.wt; })[0] || {}).wt || '';
     g.cb = (R.filter(function (o) { return o.cb; })[0] || {}).cb || '';
+    R.forEach(function (o) { if (o.pp === 'Sold') o.pp = 'Closed'; });
     g.pp = (R.filter(function (o) { return o.pp; })[0] || {}).pp || '';
     g.ask = (R.filter(function (o) { return o.ask; })[0] || {}).ask || '';
     g.rpt = (R.filter(function (o) { return o.rpt; })[0] || {}).rpt || '';
@@ -982,7 +1079,7 @@
 
   /* Owner tools: status buttons, Replied, note */
   var TL = { palmiera: 'Palmiera message', other: 'Other-cluster message', available: 'Sale message', valuation: 'Not Selling check-in', handover: 'Handover message', 'follow-up': 'Follow-up', final: 'Message 3' };
-  var STAGES = ['Interested', 'Valuation', 'Listed', 'Sold'];
+  var STAGES = ['Interested', 'Valuation', 'Listed', 'Closed'];   // 'Sold' in older rows shows as Closed
   function historyHtml(g) {
     var fu = '—', nx = nextWA(g);
     if (g.sp >= 3) fu = 'all 3 sent';
@@ -1011,25 +1108,39 @@
       return '<button class="chip2' + (g.pp === st ? ' on' : '') + '" onclick="act(\'' + id + '\',\'stage\',\'' + st + '\')">' + st + '</button>';
     }).join('') + '</div>';
   }
+  var accOpen = {};
+  function acc(id, g, name, value, body) {
+    var key = g.key + '|' + name, open = accOpen[key];
+    return '<div class="acc' + (open ? ' open' : '') + '"><button class="acc-h" onclick="accT(this,\'' + esc(key).replace(/'/g, '') + '\')"><span>' + name + '</span><i>' + value + '</i></button>' +
+      '<div class="acc-b">' + body + '</div></div>';
+  }
+  function accT(el, key) { var box = el.parentNode; box.classList.toggle('open'); accOpen[key] = box.classList.contains('open'); }
   function toolsHtml(g, id) {
-    return '<div class="tools">' + historyHtml(g) + callBackHtml(g, id) + stageHtml(g, id) +
-      '<div class="eye">Status</div>' +
-      '<div class="chips2">' + STATUSES.map(function (st) {
+    var t = stats.today, cbOpts = [['Tomorrow', addDays(t, 1)], ['1 Week', addDays(t, 7)], ['1 Month', addMonths(t, 1)], ['3 Months', addMonths(t, 3)]];
+    var last = [g.wdt, g.edt].filter(Boolean).sort().pop();
+    var hist = historyHtml(g).replace('<div class="eye msg-label">History</div>', '');
+    var a = g.rows[0], askShown = g.ask ? (opAskTxt(g.ask, a.op) || askTxt(g.ask)) : 'Not set';
+    return '<div class="tools">' +
+      acc(id, g, 'History', last ? 'Last contact ' + dfmt(last) : 'Not contacted', hist +
+        '<div class="tool-row"><button class="btn btn-line' + (g.rp ? ' replied' : '') + '" onclick="act(\'' + id + '\',\'reply\')">' + (g.rp ? '✓ Replied' : 'Mark Replied') + '</button>' +
+        (g.p ? '<button class="btn btn-line" onclick="act(\'' + id + '\',\'invalid\')">Not on WhatsApp</button>' : '<button class="btn btn-line" disabled>No WhatsApp</button>') + '</div>') +
+      acc(id, g, 'Call Back', g.cb ? dfmt(g.cb) : 'Not set',
+        '<div class="cb-row">' + cbOpts.map(function (o) { return '<button class="chip2' + (g.cb === o[1] ? ' on' : '') + '" onclick="act(\'' + id + '\',\'cb\',\'' + o[1] + '\')">' + o[0] + '</button>'; }).join('') + '</div>' +
+        '<div class="cb-date"><input type="date" id="cb_' + id + '" value="' + esc(g.cb) + '" onchange="act(\'' + id + '\',\'cb\',this.value)">' +
+        '<button class="btn btn-line" onclick="act(\'' + id + '\',\'cb\',\'\')">Clear</button></div>') +
+      acc(id, g, 'Pipeline', g.pp ? esc(g.pp) : '—', '<div class="chips2">' + STAGES.map(function (st) {
+        return '<button class="chip2' + (g.pp === st ? ' on' : '') + '" onclick="act(\'' + id + '\',\'stage\',\'' + st + '\')">' + st + '</button>'; }).join('') + '</div>') +
+      acc(id, g, 'Status', g.st ? esc(g.st) : '—', '<div class="chips2">' + STATUSES.map(function (st) {
         var on = lc(g.st) === lc(st);
-        return '<button class="chip2' + (st === 'DND' ? ' dndc' : '') + (on ? ' on' : '') + '" onclick="act(\'' + id + '\',\'status\',\'' + st + '\')">' + st + '</button>';
-      }).join('') + '</div>' +
-      '<div class="tool-row">' +
-        '<button class="btn btn-line' + (g.rp ? ' replied' : '') + '" onclick="act(\'' + id + '\',\'reply\')">' + (g.rp ? '✓ Replied' : 'Mark Replied') + '</button>' +
-        (g.p ? '<button class="btn btn-line" onclick="act(\'' + id + '\',\'invalid\')">Not on WhatsApp</button>' : '<button class="btn btn-line" disabled>No WhatsApp</button>') +
-      '</div>' +
-      '<div class="tool-row"><button class="btn btn-line" onclick="act(\'' + id + '\',\'val\')">Valuation Report</button>' +
-        '<button class="btn btn-line" onclick="act(\'' + id + '\',\'fact\')">Fact Sheet</button></div>' +
-      '<div id="val_' + id + '"></div>' +
-      '<div class="eye msg-label">Asking Price</div>' +
-      '<div class="note-row"><input class="ask-in" id="ask_' + id + '" value="' + esc(g.ask || '') + '" placeholder="e.g. 13M, OP or OP + DLD" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();act(\'' + id + '\',\'ask\')}">' +
-      '<button class="btn btn-line" onclick="act(\'' + id + '\',\'ask\')">Save</button></div>' +
-      '<div class="note-row" style="margin-top:10px"><textarea class="note" id="note_' + id + '" placeholder="Note (saved in Listing/Notes)">' + esc(g.rows[0].nt || '') + '</textarea>' +
-      '<button class="btn btn-line" onclick="act(\'' + id + '\',\'note\')">Save</button></div>' +
+        return '<button class="chip2' + (st === 'DND' ? ' dndc' : '') + (on ? ' on' : '') + '" onclick="act(\'' + id + '\',\'status\',\'' + st + '\')">' + st + '</button>'; }).join('') + '</div>') +
+      acc(id, g, 'Asking Price', esc(askShown),
+        '<div class="note-row"><input class="ask-in" id="ask_' + id + '" value="' + esc(g.ask || '') + '" placeholder="e.g. 13M, OP or OP + DLD" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();act(\'' + id + '\',\'ask\')}">' +
+        '<button class="btn btn-line" onclick="act(\'' + id + '\',\'ask\')">Save</button></div>') +
+      acc(id, g, 'Valuation & Fact Sheet', '', '<div class="tool-row"><button class="btn btn-line" onclick="act(\'' + id + '\',\'val\')">Valuation Report</button>' +
+        '<button class="btn btn-line" onclick="act(\'' + id + '\',\'fact\')">Fact Sheet</button></div><div id="val_' + id + '"></div>') +
+      acc(id, g, 'Note', a.nt ? esc(String(a.nt).split('\n')[0].slice(0, 40)) : 'None',
+        '<div class="note-row"><textarea class="note" id="note_' + id + '" placeholder="Note (saved in Listing/Notes)">' + esc(a.nt || '') + '</textarea>' +
+        '<button class="btn btn-line" onclick="act(\'' + id + '\',\'note\')">Save</button></div>') +
     '</div>';
   }
   function groupById(id) { var c = id.charAt(0); return (c === 'q' ? shownQ : c === 'p' ? shownP : c === 'c' ? shownC : shownF)[Number(id.slice(1))]; }
@@ -1219,9 +1330,10 @@
 
   /* ---------- Tabs ---------- */
   function tab(t) {
-    mode = t;
-    $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = t === 'res' ? 'on' : '';
-    $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : ''; $('tTodo').className = t === 'todo' ? 'on' : '';
+    mode = t; window.scrollTo(0, 0);
+    $('tMore').className = (t === 'todo' || t === 'res') ? 'on' : '';
+    $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = 'sheet-opt' + (t === 'res' ? ' on' : '');
+    $('tPipe').className = t === 'pipe' ? 'on' : ''; $('tTools').className = t === 'tools' ? 'on' : ''; $('tTodo').className = 'sheet-opt' + (t === 'todo' ? ' on' : '');
     $('todoView').style.display = t === 'todo' ? '' : 'none';
     $('tLeads').className = t === 'leads' ? 'on' : ''; $('leadsView').style.display = t === 'leads' ? '' : 'none';
     $('toolsView').style.display = t === 'tools' ? '' : 'none';
@@ -1577,6 +1689,9 @@
       all = (f.q ? G.concat(GD) : G).filter(function (g) { return matchesG(g, f); });
       if (f.q) all.sort(function (a, b) { return a.rows[0].r - b.rows[0].r; });
     }
+    if (qMode) { all = all.filter(function (g) { return qMode === 'follow' ? g.wa === 'follow' : g.wa === 'new'; }); if (plain) top = ''; }
+    var qbar = qMode ? '<div class="qbar"><span>Showing ' + (qMode === 'follow' ? 'follow-ups due' : 'owners not contacted yet') + '</span><button onclick="quick(\'' + qMode + '\')">Show all ✕</button></div>' : '';
+    top = qbar + top;
     shownF = all.slice(0, pageSize);
     if (!all.length) { $('list').innerHTML = top + state('<b>No Matches</b>' + (f.q ? 'No owner or unit matches “' + esc(f.q) + '”.' : 'Try fewer filters.')); return; }
     var fresh = all.filter(function (g) { return g.wa === 'new'; }).length;
@@ -1609,9 +1724,9 @@
       '</div>' +
       (opt === 'pipe'
         ? '<div class="act-row">' + waMini(g, id) + callMini(g) +
-          (g.pp !== 'Sold' ? '<button class="mini fw" onclick="act(\'' + id + '\',\'next\')">→ ' + STAGES[STAGES.indexOf(g.pp) + 1] + '</button>' : '<button class="mini again" disabled>✓ Sold</button>') + '</div>'
+          (g.pp !== 'Closed' ? '<button class="mini fw" onclick="act(\'' + id + '\',\'next\')">→ ' + STAGES[STAGES.indexOf(g.pp) + 1] + '</button>' : '<button class="mini again" disabled>✓ Closed</button>') + '</div>'
         : g.rows[0].dev ? '<div class="li-spec" style="margin-top:6px">Owned by Emaar · not contacted</div>'
-        : '<div class="act-row">' + mailMini(g, id) + callMini(g) + waMini(g, id) + '</div>' + stepDots(g, id)) +
+        : '<div class="act-row">' + mailMini(g, id) + callMini(g) + waMini(g, id) + '</div>') +
       (g._warn ? warnHtml(g, id) : '') +
       '</div>' +
       '<div class="li-panel">' + (open ? panelHtml(g, id) : '') + '</div></div>';
@@ -1646,17 +1761,56 @@
     doWhatsApp(g, edited, n); if (capped()) { renderOne(); drawList(); } else redrawRow(id);
   }
   function mailStep(id, n) { var g = groupById(id); if (!g) return; doEmail(g, n); redrawRow(id); }
+  // Which channel is next for this owner: that button is solid, the others outlined
+  function nextCh(g) {
+    if (g.dnd || g.rp) return '';
+    if (g.p && (g.wa === 'new' || g.wa === 'follow')) return 'wa';
+    if (g.e && (g.es || 0) < 3 && (!g.p || (g.es || 0) < Math.max(1, g.sp || 0))) return 'em';
+    return '';
+  }
   function waMini(g, id) {
     if (!g.p) return '<button class="mini off" disabled>No WA</button>';
-    var sent = g.wa === 'done';
-    return '<button class="mini' + (sent ? ' again' : '') + '" onclick="rowWA(\'' + id + '\')"' + (capped() ? ' disabled' : '') +
-      ' title="' + (sent ? 'Sent before. Click to send again' : 'Open WhatsApp') + '">' + (sent ? '✓ WhatsApp' : 'WhatsApp') + '</button>';
+    return '<button class="mini' + (nextCh(g) === 'wa' ? ' pri' : '') + '" onclick="openSteps(\'' + id + '\',\'wa\')">WhatsApp' +
+      (g.sp ? '<span class="stp">' + g.sp + '/3</span>' : '') + '</button>';
   }
   function mailMini(g, id) {
     if (!g.e) return '<button class="mini off" disabled>No Email</button>';
-    return '<button class="mini mail' + (g.em ? ' again' : '') + '" onclick="rowMail(\'' + id + '\')" title="' +
-      (g.em ? 'Emailed before. Click to email again' : 'Open Outlook') + '">' + (g.em ? '✓ Email' : 'Email') + '</button>';
+    return '<button class="mini mail' + (nextCh(g) === 'em' ? ' pri' : '') + '" onclick="openSteps(\'' + id + '\',\'em\')">Email' +
+      (g.es ? '<span class="stp">' + g.es + '/3</span>' : '') + '</button>';
   }
+  /* 1 · 2 · 3 in a sheet that slides up: pick which message to send */
+  var STEP_NAMES = ['Introduction', 'Follow-up', 'Check-in'], stepId = null;
+  function openSteps(id, ch) {
+    var g = groupById(id); if (!g) return; stepId = id;
+    var a = g.rows[0], wa = ch === 'wa', done = wa ? (g.sp || 0) : (g.es || 0), nx = done >= 3 ? 0 : done + 1, last = wa ? g.wdt : g.edt;
+    var h = '<div class="grab"></div><h4>' + (wa ? 'WhatsApp' : 'Email') + ' · ' + esc(g.n) + '</h4><div class="sub2">' + esc(a.cl) + ' · Unit ' + esc(a.u) +
+      (g.rp ? ' · <span style="color:var(--sage)">replied</span>' : '') + '</div>';
+    for (var n = 1; n <= 3; n++) {
+      var st, cls = n <= done ? 'done' : n === nx ? 'next' : '';
+      if (n <= done) st = 'Sent' + (n === done && last ? ' ' + dfmt(last) : '');
+      else if (n === nx) {
+        if (!wa || done === 0 || g.wa === 'follow') st = 'Next · ready now';
+        else st = 'Next · due ' + dfmt(addDays(g.wdt, done === 1 ? (stats.followDays || 5) : (stats.finalDays || 10)));
+      } else st = 'After message ' + (n - 1);
+      var off = wa && capped() && n > done;
+      h += '<div class="st-row ' + cls + '"><div class="st-n">' + n + '</div><div class="st-t"><b>' + STEP_NAMES[n - 1] + '</b><span>' + st + '</span></div>' +
+        '<button class="st-go"' + (off ? ' disabled' : '') + ' onclick="sendStep(\'' + ch + '\',' + n + ')">' + (n <= done ? 'Resend' : 'Send') + '</button></div>';
+    }
+    if (wa && capped()) h += '<div class="st-note">Daily WhatsApp limit reached.</div>';
+    if (g.dnd) h += '<div class="st-note">This owner is tagged DND.</div>';
+    $('stepSheet').innerHTML = h; $('stepSheet').classList.add('open'); $('stepBg').classList.add('open');
+  }
+  function closeSteps() { $('stepSheet').classList.remove('open'); $('stepBg').classList.remove('open'); }
+  function sendStep(ch, n) { var id = stepId; closeSteps(); if (ch === 'wa') waStep(id, n); else mailStep(id, n); }
+  function toggleMore(force) {
+    var open = force === undefined ? !$('moreSheet').classList.contains('open') : force;
+    $('moreSheet').classList.toggle('open', open); $('moreBg').classList.toggle('open', open);
+    if (open) $('moreFoot').innerHTML = (isPhone ? '' : '<label><input type="checkbox" ' + ($('desktop').checked ? 'checked ' : '') + 'onchange="$(\'desktop\').checked=this.checked;$(\'desktop\').onchange()"> Open WhatsApp in the desktop app</label>') +
+      ($('who') ? '<div style="padding:6px 0">' + $('who').innerHTML + '</div>' : '');
+  }
+  /* Today shortcuts: follow-ups due / not contacted */
+  var qMode = '';
+  function quick(m) { qMode = qMode === m ? '' : m; pageSize = 20; $('qFollow').className = 'qchip' + (qMode === 'follow' ? ' on' : ''); $('qNew').className = 'qchip' + (qMode === 'new' ? ' on' : ''); if (mode !== 'list') tab('list'); else drawList(); }
   function redrawRow(id, open) {
     var el = $('li_' + id); if (!el) return;
     var keepNote = $('note_' + id) ? $('note_' + id).value : null;
@@ -1877,7 +2031,7 @@
         return '<div title="' + k + ': ' + (wa[k] || 0) + ' WhatsApp" style="height:' + ((wa[k] || 0) / max * 100) + '%"></div>' +
                '<div class="em" title="' + k + ': ' + (em[k] || 0) + ' email" style="height:' + ((em[k] || 0) / max * 100) + '%' + (em[k] ? '' : ';border:0') + '"></div>';
       }).join('') + '</div>' +
-      '<div class="bars-x"><span>' + days[0].slice(5) + '</span><span>Today</span></div>' +
+      '<div class="bars-x"><span>' + dfmt(days[0]) + '</span><span>Today</span></div>' +
       '<div class="legend"><span><i></i>WhatsApp</span><span><i class="em"></i>Email</span></div>' +
 
       '<div class="list-note" style="margin-top:14px">Counts owners, not villas. A reply = <b>Mark Replied</b> pressed, or anything in the Reply column.</div>';
