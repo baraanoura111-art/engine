@@ -968,12 +968,12 @@
     var t = String(v || '').trim(); if (!t) return '';
     var n = t.toUpperCase().replace(/AED|,|\s/g, ''), m = n.match(/^(\d+(?:\.\d+)?)(M|MN|MIL|MILLION)?$/);
     if (m) { var x = parseFloat(m[1]); if (!m[2] && x >= 100000) x = x / 1e6; return (Math.round(x * 1000) / 1000) + 'M'; }
-    return t.slice(0, 60);
+    return opAsk(t) || t.slice(0, 60);
   }
   function doAsk(g, value, id) {
     var was = g.ask, v = askClean(value);
     g.ask = v; setRows(g, 'ask', v); redrawRow(id, true);
-    run('setAskingRows', [rowsOf(g), value], function () { toast(v ? '✓ Asking ' + askTxt(v) + ' · ' + g.n : '✓ Asking price cleared · ' + g.n); }, 'asking price');
+    run('setAskingRows', [rowsOf(g), value], function () { toast(v ? '✓ Asking ' + (opAskTxt(v, g.rows[0].op) || askTxt(v)) + ' · ' + g.n : '✓ Asking price cleared · ' + g.n); }, 'asking price');
   }
   function doNote(g, text) {
     g.rows[0].nt = text;
@@ -1026,7 +1026,7 @@
         '<button class="btn btn-line" onclick="act(\'' + id + '\',\'fact\')">Fact Sheet</button></div>' +
       '<div id="val_' + id + '"></div>' +
       '<div class="eye msg-label">Asking Price</div>' +
-      '<div class="note-row"><input class="ask-in" id="ask_' + id + '" value="' + esc(g.ask || '') + '" placeholder="e.g. 13M" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();act(\'' + id + '\',\'ask\')}">' +
+      '<div class="note-row"><input class="ask-in" id="ask_' + id + '" value="' + esc(g.ask || '') + '" placeholder="e.g. 13M, OP or OP + DLD" autocomplete="off" onkeydown="if(event.key===\'Enter\'){event.preventDefault();act(\'' + id + '\',\'ask\')}">' +
       '<button class="btn btn-line" onclick="act(\'' + id + '\',\'ask\')">Save</button></div>' +
       '<div class="note-row" style="margin-top:10px"><textarea class="note" id="note_' + id + '" placeholder="Note (saved in Listing/Notes)">' + esc(g.rows[0].nt || '') + '</textarea>' +
       '<button class="btn btn-line" onclick="act(\'' + id + '\',\'note\')">Save</button></div>' +
@@ -1604,7 +1604,7 @@
           (g.st ? ' · ' + esc(g.st) : '') + (g.siblings && g.siblings.length > 1 ? '<span class="owns">Owns ' + g.siblings.length + ' units</span>' : '') + '</div>' +
         (many ? unitsLine(g).replace('<b>' + g.rows.length + ' villas</b> · ', '')
               : '<div class="li-spec">' + esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · ')) + '</div>') +
-        (opt !== 'pipe' && (g.k === 'available' || askNum(g.ask) > 0) && g.ask ? '<div class="li-ask">Asking <b>' + esc(askTxt(g.ask)) + '</b></div>' : '') +
+        (opt !== 'pipe' && (g.k === 'available' || askNum(g.ask) > 0 || opAsk(g.ask)) && g.ask ? '<div class="li-ask">Asking <b>' + esc(opAskTxt(g.ask, a.op) || askTxt(g.ask)) + '</b></div>' : '') +
         nextLine + noteLine +
       '</div>' +
       (opt === 'pipe'
@@ -1711,6 +1711,24 @@
 
   /* ---------- Pipeline tab ---------- */
   var shownP = [], pStage = 'Interested', pSort = 'cb';
+  function opAsk(t) {                      // "op" → "OP", "op+dld" → "OP + DLD", "op -2%" → "OP -2%", "2% below op" → "2% below OP"
+    var x = String(t || '').trim().toLowerCase().replace(/\s+/g, ' '), m;
+    if (/^op$/.test(x)) return 'OP';
+    if (/^op ?\+ ?dld$/.test(x)) return 'OP + DLD';
+    if ((m = x.match(/^op ?([+-]) ?(\d+(?:\.\d+)?) ?%$/))) return 'OP ' + m[1] + m[2] + '%';
+    if ((m = x.match(/^(\d+(?:\.\d+)?) ?% ?(below|above) op$/))) return m[1] + '% ' + m[2] + ' OP';
+    return '';
+  }
+  function fmtM(n) { return 'AED ' + (Math.round(n / 1e4) / 100).toString() + 'M'; }
+  function opAskTxt(v, op) {               // works out the price from the original price, like the bot does
+    var k = opAsk(v), o = askNum(op), m; if (!k) return '';
+    if (!o) return k;
+    if (k === 'OP') return fmtM(o) + ' (OP)';
+    if (k === 'OP + DLD') return fmtM(o) + ' + DLD';
+    if ((m = k.match(/^OP ([+-])([\d.]+)%$/))) return fmtM(o * (1 + (m[1] === '-' ? -1 : 1) * parseFloat(m[2]) / 100)) + ' (' + k + ')';
+    if ((m = k.match(/^([\d.]+)% (below|above) OP$/))) return fmtM(o * (1 + (m[2] === 'below' ? -1 : 1) * parseFloat(m[1]) / 100)) + ' (' + k + ')';
+    return k;
+  }
   function askTxt(v) {                // "15M" / "14,300,000" → "AED 15M" / "AED 14.3M"; text like "Not For Sale" stays as written
     var n = askNum(v); if (!n) return String(v).trim();
     return 'AED ' + (n >= 1e6 ? (Math.round(n / 1e5) / 10).toString().replace(/\.0$/, '') + 'M' : n.toLocaleString('en-US'));
