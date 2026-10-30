@@ -2056,8 +2056,6 @@
     }
     if (wa && capped()) h += '<div class="st-note">Daily WhatsApp limit reached.</div>';
     if (g.dnd) h += '<div class="st-note">This owner is tagged DND.</div>';
-    h += '<div class="st-foot">' + (id.charAt(0) === 'f' ? '<a onclick="skipNext()">Skip to next owner →</a>' : '<span></span>') +
-      '<label><input type="checkbox"' + (sendNext() ? ' checked' : '') + ' onchange="setSendNext(this.checked)"> Send &amp; Next</label></div>';
     if (auto) h = h.replace('<div class="grab"></div>', '<div class="grab"></div><div class="st-auto">Next owner</div>');
     $('stepSheet').innerHTML = h; $('stepSheet').classList.add('open'); $('stepBg').classList.add('open');
   }
@@ -2065,7 +2063,6 @@
   function sendStep(ch, n) {
     var id = stepId, g = groupById(id); closeSteps(); if (!g) return;
     withUndo(g, ch === 'wa' ? 'wa' : 'em', (ch === 'wa' ? 'WhatsApp ' : 'Email ') + n + ' logged · ' + g.n, function () { if (ch === 'wa') waStep(id, n); else mailStep(id, n); });
-    if (sendNext()) setTimeout(function () { openNext(id, ch); }, 900);
   }
   /* Send & Next: after a send, the next owner who is due on the same channel opens by itself */
   function sendNext() { try { return localStorage.getItem('oasisSendNext') !== '0'; } catch (e) { return true; } }
@@ -2089,7 +2086,6 @@
     var open = force === undefined ? !$('moreSheet').classList.contains('open') : force;
     $('moreSheet').classList.toggle('open', open); $('moreBg').classList.toggle('open', open);
     if (open) $('moreFoot').innerHTML =
-      '<label><input type="checkbox"' + (sendNext() ? ' checked' : '') + ' onchange="setSendNext(this.checked)"> Send &amp; Next: open the next owner after each send</label>' +
       (navigator.setAppBadge && window.Notification && Notification.permission !== 'granted' ? '<label><a onclick="badgeOn()">Show the new-lead count on the app icon</a></label>' : '') +
       (isPhone ? '' : '<label><input type="checkbox" ' + ($('desktop').checked ? 'checked ' : '') + 'onchange="$(\'desktop\').checked=this.checked;$(\'desktop\').onchange()"> Open WhatsApp in the desktop app</label>') +
       ($('who') ? '<div style="padding:6px 0">' + $('who').innerHTML + '</div>' : '');
