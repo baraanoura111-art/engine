@@ -513,9 +513,13 @@
   .dnav, .dk-head, #homeView:empty { display:none; }
   body.desk .dnav { display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; width:220px; z-index:30; background:#0f0e0c; border-right:1px solid var(--line); padding:26px 0 20px; }
   .dn-brand { padding:0 26px 26px; color:var(--sage); } .dn-brand b { display:block; font:200 25px "Poppins",var(--body); letter-spacing:.04em; } .dn-brand span { font-size:10px; letter-spacing:.38em; }
-  .dnav a { display:flex; justify-content:space-between; align-items:center; padding:11px 26px; color:var(--muted); font-size:14.5px; cursor:pointer; border-left:2px solid transparent; }
-  .dnav a:hover { color:var(--ink); } .dnav a.on { color:var(--ink); border-left-color:var(--sage); background:var(--surface); }
-  .dnav a i { font-style:normal; background:var(--sage-btn); color:#161514; border-radius:9px; font-size:11px; padding:0 7px; } .dnav a i:empty { display:none; }
+  .dn-tiles { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 16px; }
+  .dnav a { position:relative; display:flex; flex-direction:column; align-items:flex-start; justify-content:space-between; gap:10px; min-height:74px; padding:12px; border-radius:12px;
+    background:var(--surface); border:1px solid var(--line); color:var(--muted); font-size:13px; cursor:pointer; transition:border-color .15s, color .15s, background .15s; }
+  .dnav a svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .dnav a:hover { color:var(--ink); border-color:var(--box); }
+  .dnav a.on { color:#161514; background:var(--sage-btn); border-color:var(--sage-btn); }
+  .dnav a i { position:absolute; top:10px; right:10px; font-style:normal; background:#C8473D; color:#fff; border-radius:9px; font-size:11px; padding:0 7px; } .dnav a i:empty { display:none; }
   .dn-foot { margin-top:auto; padding:0 22px 0 26px; font-size:12.5px; color:var(--muted); }
   .dn-sent { display:flex; justify-content:space-between; align-items:center; } .dn-sent b { color:var(--ink); font-weight:400; }
   .dn-foot .track { margin:8px 0 6px; } .dn-note { min-height:16px; font-size:11.5px; }
@@ -690,9 +694,7 @@
 </form></div>
 <aside class="dnav" id="dnav">
   <div class="dn-brand"><b>THE OASIS</b><span>OUTREACH ENGINE</span></div>
-  <a id="dHome" onclick="tab('home')">Home</a><a id="dList" onclick="tab('list')">Contacts</a><a id="dPipe" onclick="tab('pipe')">Pipeline</a>
-  <a id="dLeads" onclick="tab('leads')">Leads <i id="dLeadCount"></i></a><a id="dInq" onclick="tab('inq')">Inquiries</a><a id="dTodo" onclick="tab('todo')">To Do</a>
-  <a id="dTools" onclick="tab('tools')">Tools</a><a id="dRes" onclick="tab('res')">Results</a>
+  <div class="dn-tiles"><a id="dHome" onclick="tab('home')"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/></svg><span>Home</span></a><a id="dList" onclick="tab('list')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-3.8 3.9-6 7.5-6s6.7 2.2 7.5 6"/></svg><span>Contacts</span></a><a id="dPipe" onclick="tab('pipe')"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>Pipeline</span></a><a id="dLeads" onclick="tab('leads')"><svg viewBox="0 0 24 24"><path d="M3.5 13.5 6 5.5h12l2.5 8v5h-17z"/><path d="M3.5 13.5h5l1.3 2.2h4.4l1.3-2.2h5"/></svg><span>Leads</span><i id="dLeadCount"></i></a><a id="dInq" onclick="tab('inq')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><span>Inquiries</span></a><a id="dTodo" onclick="tab('todo')"><svg viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="3"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><span>To Do</span></a><a id="dTools" onclick="tab('tools')"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg><span>Tools</span></a><a id="dRes" onclick="tab('res')"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg><span>Results</span></a></div>
   <div class="dn-foot"><div class="dn-sent"><span id="dSent">– / –</span><button class="icon-btn" onclick="loadAll(true)" title="Reload from the tracker" aria-label="Refresh">↻</button></div>
     <div class="track"><i id="dCapBar"></i></div><div class="dn-note" id="dNote"></div>
     <label class="dn-opt"><input type="checkbox" onchange="$('desktop').checked=this.checked;$('desktop').onchange()" id="dDeskWA"> WhatsApp Desktop app</label></div>
