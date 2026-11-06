@@ -530,9 +530,13 @@
   body.desk .foot { text-align:left; max-width:420px; margin-top:28px; }
   /* list rows: compact; the open owner fills the right pane */
   body.desk .li-row .act-row, body.desk .li-row .li-ask { display:none; }
-  body.desk .li { cursor:pointer; }
-  body.desk .li.open { background:var(--surface); border:0; border-radius:0; margin:0 -14px; padding:2px 14px 10px; box-shadow:inset 2px 0 var(--sage); }
-  body.desk .li.open .li-row { padding-top:12px; }
+  /* contacts as cards */
+  body.desk #list .li, body.desk #pipeView .li { cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:12px; margin:0 0 10px; padding:0 16px 2px; transition:border-color .15s, background .15s; }
+  body.desk #list .li + .li, body.desk #pipeView .li + .li { border-top:1px solid var(--line); }
+  body.desk #list .li:hover, body.desk #pipeView .li:hover { border-color:var(--box); background:#1a1815; }
+  body.desk #list .li.open, body.desk #pipeView .li.open { background:#181a16; border:1px solid var(--sage); box-shadow:none; margin:0 0 10px; padding:0 16px 2px; }
+  body.desk .li .li-row { padding-top:12px; }
+  body.desk .li.is-dnd { opacity:.75; }
   body.desk .li.open .li-panel { position:fixed; left:704px; top:0; right:0; bottom:0; z-index:20; overflow-y:auto; margin:0; border:0; border-left:1px solid var(--line);
     background:var(--bg); padding:28px 36px 60px; }
   body.desk .dk-head { display:block; margin-bottom:18px; }
