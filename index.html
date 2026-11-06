@@ -2174,7 +2174,6 @@
     if ((g.rows[0] || {}).dev) return ['', ''];
     if (g.cb) { var d = daysAgo(g.cb); if (d > 0) return ['Call back · ' + d + 'd late', 'due']; if (d === 0) return ['Call back today', 'due']; return ['Call back ' + dfmt(g.cb), '']; }
     if (g.rp) return ['Replied', 'rep'];
-    if (g.wa === 'follow') return ['WhatsApp ' + nextWA(g) + ' due', 'due'];
     if (g.wa === 'new') return ['Not contacted', ''];
     if (g.sp) return ['WhatsApp ' + g.sp + ' sent', ''];
     if (g.es) return ['Email ' + g.es + ' sent', ''];
