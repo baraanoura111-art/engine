@@ -533,9 +533,16 @@
   body.desk #toolsView, body.desk #leadsView, body.desk #inqView, body.desk #todoView, body.desk #resView, body.desk #pipeView { max-width:none; }
   body.desk .wrap { min-height:100vh; box-sizing:border-box; }
   /* full-width pages: cards flow in columns */
-  body.desk #leadsView, body.desk #inqList, body.desk #tdList { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:14px; align-items:start; }
-  body.desk #leadsView > :not(.lead), body.desk #inqList > :not(.inq), body.desk #tdList > :not(.td-row) { grid-column:1 / -1; }
-  body.desk .lead, body.desk .inq { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:0; }
+  body.desk #inqList, body.desk #tdList { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:14px; align-items:start; }
+  body.desk #inqList > :not(.inq), body.desk #tdList > :not(.td-row) { grid-column:1 / -1; }
+  /* leads: full-width list, one row per lead */
+  body.desk .lead { display:grid; grid-template-columns:minmax(220px,1.1fr) minmax(0,2fr) 230px auto; gap:4px 24px; align-items:center; padding:14px 6px; }
+  body.desk .lead .ln { grid-column:1; grid-row:1; } body.desk .lead .lm { grid-column:1; grid-row:2; margin:0; }
+  body.desk .lead .ld { grid-column:2; grid-row:1 / span 2; margin:0; }
+  body.desk .lead .lb { grid-column:3; grid-row:1 / span 2; margin:0; }
+  body.desk .lead .ls { grid-column:4; grid-row:1 / span 2; margin:0; flex-wrap:nowrap; }
+  body.desk .lead:hover { background:var(--surface); }
+  body.desk .inq { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:0; }
   body.desk .inq.done { opacity:.7; }
   body.desk #tdList { grid-template-columns:repeat(auto-fill, minmax(420px, 1fr)); gap:0 28px; }
   body.desk .td-chk { width:22px; height:22px; } body.desk .td-x { min-width:34px; min-height:34px; font-size:18px; }
