@@ -522,7 +522,9 @@
   .dn-opt { display:flex; gap:8px; align-items:center; margin-top:10px; cursor:pointer; font-size:12px; }
   body.desk .wrap { max-width:none; margin:0 0 0 220px; padding:24px 32px 40px; }
   body.desk .hdr, body.desk .wrap > .track, body.desk .bnav, body.desk #moreSheet, body.desk #deskWrap { display:none !important; }
-  body.desk #listView, body.desk #pipeView { width:420px; }
+  body.desk { --lw:420px; }
+  @media (max-width:1320px) { body.desk { --lw:340px; } }
+  body.desk #listView, body.desk #pipeView { width:var(--lw); }
   body.desk #toolsView, body.desk #leadsView, body.desk #inqView, body.desk #todoView, body.desk #resView { max-width:760px; }
   body.desk .toast { bottom:22px; left:220px; }
   body.desk .sheet { bottom:auto; top:12vh; border-radius:18px; border-bottom:1px solid var(--box); max-width:480px; left:220px; }
@@ -537,7 +539,7 @@
   body.desk #list .li.open, body.desk #pipeView .li.open { background:#181a16; border:1px solid var(--sage); box-shadow:none; margin:0 0 10px; padding:0 16px 2px; }
   body.desk .li .li-row { padding-top:12px; }
   body.desk .li.is-dnd { opacity:.75; }
-  body.desk .li.open .li-panel { position:fixed; left:704px; top:0; right:0; bottom:0; z-index:20; overflow-y:auto; margin:0; border:0; border-left:1px solid var(--line);
+  body.desk .li.open .li-panel { position:fixed; left:calc(284px + var(--lw)); top:0; right:0; bottom:0; z-index:20; overflow-y:auto; margin:0; border:0; border-left:1px solid var(--line);
     background:var(--bg); padding:28px 36px 60px; }
   body.desk .dk-head { display:block; margin-bottom:18px; }
   .dk-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
@@ -549,10 +551,29 @@
   .dk-pill.hot { background:var(--sage-btn); color:#161514; border-color:var(--sage-btn); }
   body.desk .dk-head .act-row { display:grid; margin-top:18px; grid-template-columns:repeat(3,1fr); gap:10px; }
   body.desk .dk-head .act-row .mini { height:46px; font-size:12px; }
-  body.desk .li-panel .tools { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:0; align-items:start; }
-  body.desk .li-panel .acc { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:4px 16px 10px; }
-  body.desk .li-panel .acc-h { pointer-events:none; min-height:40px; } body.desk .li-panel .acc-h i::after { content:''; }
-  body.desk .li-panel .acc-b { display:block; }
+  /* open owner: one clean column, a label on the left and the controls on the right of each section */
+  body.desk .li.open .li-panel { container-type:inline-size; }
+  body.desk .li-panel > * { max-width:860px; }
+  body.desk .li-panel .tools { display:block; margin-top:6px; }
+  body.desk .li-panel .acc { display:grid; grid-template-columns:180px minmax(0,1fr); gap:8px 28px; padding:18px 0; background:none; border:0; border-top:1px solid var(--line); border-radius:0; }
+  body.desk .li-panel .acc-h { flex-direction:column; align-items:flex-start; justify-content:flex-start; gap:5px; min-height:0; padding:2px 0 0; pointer-events:none; }
+  body.desk .li-panel .acc-h i { max-width:none; text-align:left; white-space:normal; font-size:13px; }
+  body.desk .li-panel .acc-h i::after { content:''; }
+  body.desk .li-panel .acc-b { display:block; padding:0; min-width:0; }
+  body.desk .li-panel .hist { background:none; border:0; padding:0; margin:0 0 10px; }
+  body.desk .li-panel .hist .kv { padding:7px 0; }
+  body.desk .li-panel .hist .kv:last-child { border-bottom:0; }
+  body.desk .li-panel .tool-row { display:flex; flex-wrap:wrap; gap:10px; }
+  body.desk .li-panel .tool-row .btn { width:auto; flex:0 1 auto; min-width:150px; padding:0 18px; margin:0; }
+  body.desk .li-panel .chips2 { gap:8px; }
+  body.desk .li-panel .list-note { margin:12px 0 0 !important; font-size:13px; }
+  .li-panel .list-note a { color:var(--sage); cursor:pointer; text-decoration:none; }
+  body.desk .dk-head { padding-bottom:18px; margin-bottom:0; }
+  body.desk .dk-tags { flex-direction:column; align-items:flex-end; }
+  @container (max-width:620px) {
+    .li-panel .acc { grid-template-columns:minmax(0,1fr) !important; gap:10px !important; }
+    .li-panel .acc-h { flex-direction:row !important; justify-content:space-between !important; width:100%; }
+  }
   body.desk .li-panel .btn-line[onclick^="toggle"] { display:none; }
   body.desk .li-panel .pin-btn { max-width:240px; }
   /* Home */
