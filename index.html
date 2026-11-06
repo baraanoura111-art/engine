@@ -590,23 +590,35 @@
   body.desk .li-panel .btn-line[onclick^="toggle"] { display:none; }
   body.desk .li-panel .pin-btn { max-width:240px; }
   /* Home */
-  body.desk #homeView { max-width:1240px; }
-  .hm-h { margin:4px 0 22px; font:300 26px var(--body); letter-spacing:.02em; }
-  .hm-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:18px; }
-  .hm-t { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; } .hm-t[onclick] { cursor:pointer; } .hm-t[onclick]:hover { border-color:var(--box); }
-  .hm-t b { display:block; font:200 32px "Poppins",var(--body); color:var(--ink); } .hm-t span { font-size:10.5px; letter-spacing:.26em; text-transform:uppercase; color:var(--sage); }
-  .hm-cols { display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:16px; align-items:start; } .hm-stack { display:flex; flex-direction:column; gap:16px; }
-  .hp { background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  .hp h3 { display:flex; justify-content:space-between; margin:0; padding:14px 18px; font-weight:400; font-size:10.5px; letter-spacing:.3em; text-transform:uppercase; color:var(--sage); border-bottom:1px solid var(--line); }
-  .hp h3 a { color:var(--muted); letter-spacing:.1em; cursor:pointer; } .hp h3 a:hover { color:var(--ink); }
-  .hp-r { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 18px; border-bottom:1px solid var(--line); cursor:pointer; }
-  .hp-r:last-child, .hp-td:last-child { border-bottom:0; } .hp-r:hover { background:#1b1915; }
-  .hp-r b { display:block; font-weight:400; font-size:14px; } .hp-r span { font-size:12px; color:var(--muted); }
-  .hp-b { flex:none; } .hp-b .mini { width:auto; min-width:96px; height:34px; padding:0 12px; font-size:10.5px; display:inline-flex; align-items:center; justify-content:center; }
+  body.desk #homeView { max-width:1180px; }
+  .hm-top { display:flex; justify-content:space-between; align-items:flex-end; margin:6px 0 22px; }
+  .hm-d { font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--sage); }
+  .hm-h { margin:8px 0 0; font:300 30px var(--body); letter-spacing:.01em; }
+  .hm-stats { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-bottom:22px; overflow:hidden; }
+  .hs { text-align:left; background:transparent; border:0; border-left:1px solid var(--line); padding:16px 20px; color:var(--ink); font:inherit; cursor:pointer; }
+  .hs:first-child { border-left:0; } .hs:disabled { cursor:default; } .hs:not(:disabled):hover { background:#1b1915; }
+  .hs b { display:block; font:200 28px "Poppins",var(--body); } .hs b i { font-style:normal; font-size:16px; color:var(--muted); margin-left:4px; }
+  .hs span { display:block; margin-top:2px; font-size:12px; color:var(--muted); } .hs.hot b { color:var(--sage-btn); }
+  .hm-grid { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:18px; align-items:start; }
+  .hm-col { display:flex; flex-direction:column; gap:18px; min-width:0; }
+  .hp { background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .hp h3 { display:flex; justify-content:space-between; align-items:center; margin:0; padding:14px 18px; font-weight:400; font-size:14.5px; letter-spacing:0; text-transform:none; color:var(--ink); border-bottom:1px solid var(--line); }
+  .hp h3 em { font-style:normal; margin-left:8px; font-size:11.5px; color:#161514; background:var(--sage-btn); border-radius:9px; padding:1px 7px; vertical-align:1px; }
+  .hp h3 a { font-size:12.5px; color:var(--muted); cursor:pointer; } .hp h3 a:hover { color:var(--sage); }
+  .hp-r { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:11px 18px; border-bottom:1px solid var(--line); cursor:pointer; }
+  .hp-r:last-child, .hp-td:last-child { border-bottom:0; } .hp-r:hover, .hp-td:hover { background:#1b1915; }
+  .hp-r > div { min-width:0; } .hp-r b { display:block; font-weight:400; font-size:14px; }
+  .hp-r span { display:block; font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .hp-b { flex:none; } .hp-b .mini { width:auto; min-width:92px; height:34px; padding:0 12px; font-size:10.5px; display:inline-flex; align-items:center; justify-content:center; }
   .hp-b .mini.pri { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
-  .hp-td { display:flex; gap:12px; align-items:center; padding:10px 18px; border-bottom:1px solid var(--line); font-size:13.5px; }
-  .hp-td .td-chk { flex:none; }
-  .hp-e { padding:14px 18px; color:var(--muted); font-size:13px; }
+  .hp-add { padding:12px 18px; border-bottom:1px solid var(--line); }
+  .hp-add input { width:100%; box-sizing:border-box; height:40px; padding:0 12px; border-radius:10px; border:1px solid var(--box); background:var(--bg); color:var(--ink); font:inherit; font-size:13.5px; }
+  .hp-add input:focus { outline:none; border-color:var(--sage); }
+  .hp-td { display:flex; gap:12px; align-items:center; padding:10px 18px; border-bottom:1px solid var(--line); font-size:14px; }
+  .hp-chk { flex:none; width:18px; height:18px; border-radius:5px; border:1px solid var(--sage); background:transparent; cursor:pointer; padding:0; }
+  .hp-chk:hover { background:rgba(171,192,168,.25); }
+  .hp-more { padding:10px 18px; font-size:12.5px; color:var(--sage); cursor:pointer; }
+  .hp-e { padding:13px 18px; color:var(--muted); font-size:13px; }
   .hdr-note { font-size:11.5px; color:var(--muted); margin-right:6px; }
   .toast .undo { margin-left:14px; min-height:34px; padding:0 14px; border-radius:10px; border:1px solid var(--sage); background:transparent; color:var(--sage); font:400 12px var(--body); letter-spacing:.1em; text-transform:uppercase; cursor:pointer; pointer-events:auto; }
   .st-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid var(--line); margin-top:6px; padding-top:4px; font-size:13px; color:var(--muted); }
@@ -1635,8 +1647,8 @@
   }
   function homeRow(g, btns) {
     var a = g.rows[0];
-    return '<div class="hp-r" onclick="openOwner(\'' + esc(g.key).replace(/'/g, "\\'") + '\')"><div><b>' + esc(g.n) + '</b><span>' +
-      esc([a.cl + ' · Unit ' + a.u, g.st || ''].filter(Boolean).join(' · ')) + '</span></div>' + (btns || '') + '</div>';
+    return '<div class="hp-r" onclick="openOwner(\'' + esc(g.key).replace(/'/g, "\\'") + '\')"><div><b>' + esc(unitTitle(a)) + '</b><span>' +
+      esc([g.n, g.st || ''].filter(Boolean).join(' · ')) + '</span></div>' + (btns || '') + '</div>';
   }
   function drawHome() {
     if (!loaded) return;
@@ -1648,26 +1660,36 @@
     var inq = INQ ? INQ.filter(function (x) { return !x.d; }) : null;
     var tds = TODOS ? TODOS.filter(function (x) { return !x.d; }) : null;
     var pins = PINS.map(function (k) { return G.filter(function (g) { return pinKey(g) === k; })[0]; }).filter(Boolean);
-    var h0 = new Date().getHours(), hi = h0 < 12 ? 'Good morning' : h0 < 18 ? 'Good afternoon' : 'Good evening';
-    var tile = function (n, l, go) { return '<div class="hm-t"' + (go ? ' onclick="' + go + '"' : '') + '><b>' + n + '</b><span>' + l + '</span></div>'; };
-    var load = '<div class="hp-e">Loading…</div>';
+    var now = new Date(), h0 = now.getHours(), hi = h0 < 12 ? 'Good morning' : h0 < 18 ? 'Good afternoon' : 'Good evening';
+    var dstr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    var stat = function (n, l, go, hot) { return '<button class="hs' + (hot ? ' hot' : '') + '"' + (go ? ' onclick="' + go + '"' : ' disabled') + '><b>' + n + '</b><span>' + l + '</span></button>'; };
+    var panel = function (title, count, link, body) {
+      return '<section class="hp"><h3><span>' + title + (count ? '<em>' + count + '</em>' : '') + '</span>' + (link ? '<a onclick="' + link + '">View all →</a>' : '') + '</h3>' + body + '</section>';
+    };
+    var empty = function (t) { return '<div class="hp-e">' + t + '</div>'; };
+    var load = empty('Loading…');
     var cbBtn = function (g) { return g.tel ? '<span class="hp-b"><a class="mini call" href="tel:+' + esc(g.tel) + '" onclick="event.stopPropagation()">Call</a></span>' : ''; };
-    $('homeView').innerHTML = '<h1 class="hm-h">' + hi + ', Baraa</h1>' +
-      '<div class="hm-tiles">' + tile(stats.sentToday + ' / ' + stats.cap, 'WhatsApp sent today') + tile(cbs.length, 'Call backs today', "tab('list')") +
-        tile(leads ? leads.length : '–', 'New leads', "tab('leads')") + tile(inq ? inq.length : '–', 'Open inquiries', "tab('inq')") + '</div>' +
-      '<div class="hm-cols"><div class="hp"><h3>Call back today<a onclick="tab(\'list\')">Contacts →</a></h3>' +
-        (cbs.length ? cbs.slice(0, 12).map(function (g) { return homeRow(g, cbBtn(g)); }).join('') : '<div class="hp-e">No call-backs due today.</div>') + '</div>' +
-      '<div class="hm-stack"><div class="hp"><h3>New leads<a onclick="tab(\'leads\')">All →</a></h3>' +
-        (!leads ? load : leads.length ? leads.slice(0, 6).map(function (l) { var i = LD.leads.indexOf(l);
-          return '<div class="hp-r" onclick="tab(\'leads\')"><div><b>' + esc(l.name || 'No name') + '</b><span>' + esc([l.src, l.details].filter(Boolean).join(' · ').slice(0, 80)) + '</span></div>' +
-            (l.wa ? '<span class="hp-b"><button class="mini pri" onclick="event.stopPropagation();leadWA(' + i + ')">WhatsApp</button></span>' : '') + '</div>'; }).join('') : '<div class="hp-e">No new leads.</div>') + '</div>' +
-        '<div class="hp"><h3>Pinned</h3>' + (pins.length ? pins.map(function (g) { return homeRow(g); }).join('') : '<div class="hp-e">Pin up to 5 owners from their card.</div>') + '</div></div>' +
-      '<div class="hm-stack"><div class="hp"><h3>Open inquiries<a onclick="tab(\'inq\')">All →</a></h3>' +
-        (!inq ? load : inq.length ? inq.slice(0, 6).map(function (x) {
-          return '<div class="hp-r" onclick="tab(\'inq\')"><div><b>' + esc(x.client || 'Client') + '</b><span>' + esc(x.req) + '</span></div><span class="hp-b"><button class="mini" onclick="event.stopPropagation();tab(\'inq\');inqMatch(\'' + esc(x.id) + '\')">Matches</button></span></div>'; }).join('') : '<div class="hp-e">No open inquiries.</div>') + '</div>' +
-        '<div class="hp"><h3>To do<a onclick="tab(\'todo\')">All →</a></h3>' +
-        (!tds ? load : tds.length ? tds.slice(0, 8).map(function (x) {
-          return '<div class="hp-td"><button class="td-chk" onclick="todoToggle(\'' + esc(x.id) + '\');drawHome()"></button><span>' + esc(x.t) + '</span></div>'; }).join('') : '<div class="hp-e">Nothing to do.</div>') + '</div></div></div>';
+    var leadsBody = !leads ? load : leads.length ? leads.slice(0, 5).map(function (l) { var i = LD.leads.indexOf(l);
+      return '<div class="hp-r" onclick="tab(\'leads\')"><div><b>' + esc(l.name || 'No name') + '</b><span>' + esc([l.src, l.details].filter(Boolean).join(' · ').slice(0, 90)) + '</span></div>' +
+        (l.wa ? '<span class="hp-b"><button class="mini pri" onclick="event.stopPropagation();leadWA(' + i + ')">WhatsApp</button></span>' : '') + '</div>'; }).join('') : empty('No new leads.');
+    var inqBody = !inq ? load : inq.length ? inq.slice(0, 5).map(function (x) {
+      return '<div class="hp-r" onclick="tab(\'inq\')"><div><b>' + esc(x.client || 'Client') + '</b><span>' + esc(x.req) + '</span></div><span class="hp-b"><button class="mini" onclick="event.stopPropagation();tab(\'inq\');inqMatch(\'' + esc(x.id) + '\')">Matches</button></span></div>'; }).join('') : empty('No open inquiries.');
+    var todoBody = '<div class="hp-add"><input id="hmTd" placeholder="Add a task and press Enter" onkeydown="if(event.key===\'Enter\'){homeTodo()}"></div>' +
+      (!tds ? load : tds.length ? tds.slice(0, 10).map(function (x) {
+        return '<div class="hp-td"><button class="hp-chk" onclick="todoToggle(\'' + esc(x.id) + '\');drawHome()" title="Mark done"></button><span>' + esc(x.t) + '</span></div>'; }).join('') +
+        (tds.length > 10 ? '<div class="hp-more" onclick="tab(\'todo\')">+ ' + (tds.length - 10) + ' more</div>' : '') : empty('Nothing to do.'));
+    var cbBody = cbs.length ? cbs.slice(0, 8).map(function (g) { return homeRow(g, cbBtn(g)); }).join('') : empty('No call-backs due today.');
+    var pinBody = pins.length ? pins.map(function (g) { return homeRow(g); }).join('') : empty('Open an owner and press Pin to Top.');
+    $('homeView').innerHTML = '<div class="hm-top"><div><div class="hm-d">' + dstr + '</div><h1 class="hm-h">' + hi + ', Baraa</h1></div></div>' +
+      '<div class="hm-stats">' + stat(stats.sentToday + '<i>/ ' + stats.cap + '</i>', 'WhatsApp sent today') + stat(cbs.length, 'Call-backs today', "tab('list')", cbs.length) +
+        stat(leads ? leads.length : '–', 'New leads', "tab('leads')", leads && leads.length) + stat(inq ? inq.length : '–', 'Open inquiries', "tab('inq')", inq && inq.length) +
+        stat(tds ? tds.length : '–', 'Tasks to do', "tab('todo')") + '</div>' +
+      '<div class="hm-grid"><div class="hm-col">' + panel('To do', tds && tds.length, "tab('todo')", todoBody) + panel('Call back today', cbs.length, "tab('list')", cbBody) + '</div>' +
+        '<div class="hm-col">' + panel('Open inquiries', inq && inq.length, "tab('inq')", inqBody) + panel('New leads', leads && leads.length, "tab('leads')", leadsBody) + panel('Pinned', pins.length, '', pinBody) + '</div></div>';
+  }
+  function homeTodo() {
+    var v = $('hmTd').value.trim(); if (!v) return;
+    $('tdIn').value = v; todoAdd(); drawHome(); setTimeout(function () { var x = $('hmTd'); if (x) x.focus(); }, 0);
   }
 
   /* ---------- Inquiries: client requests, with matching villas from the bot search ---------- */
