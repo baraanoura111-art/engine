@@ -509,6 +509,66 @@
   .toast { position:fixed; left:0; right:0; bottom:calc(64px + env(safe-area-inset-bottom, 0px)); margin:0 auto; max-width:440px; z-index:45; background:rgba(13,12,11,.92); pointer-events:none; }
   .toast:empty { display:none; }
   .opt { display:none; }
+  /* ===== Desktop (≥1100px, not phones) ===== */
+  .dnav, .dk-head, #homeView:empty { display:none; }
+  body.desk .dnav { display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; width:220px; z-index:30; background:#0f0e0c; border-right:1px solid var(--line); padding:26px 0 20px; }
+  .dn-brand { padding:0 26px 26px; color:var(--sage); } .dn-brand b { display:block; font:200 25px "Poppins",var(--body); letter-spacing:.04em; } .dn-brand span { font-size:10px; letter-spacing:.38em; }
+  .dnav a { display:flex; justify-content:space-between; align-items:center; padding:11px 26px; color:var(--muted); font-size:14.5px; cursor:pointer; border-left:2px solid transparent; }
+  .dnav a:hover { color:var(--ink); } .dnav a.on { color:var(--ink); border-left-color:var(--sage); background:var(--surface); }
+  .dnav a i { font-style:normal; background:var(--sage-btn); color:#161514; border-radius:9px; font-size:11px; padding:0 7px; } .dnav a i:empty { display:none; }
+  .dn-foot { margin-top:auto; padding:0 22px 0 26px; font-size:12.5px; color:var(--muted); }
+  .dn-sent { display:flex; justify-content:space-between; align-items:center; } .dn-sent b { color:var(--ink); font-weight:400; }
+  .dn-foot .track { margin:8px 0 6px; } .dn-note { min-height:16px; font-size:11.5px; }
+  .dn-opt { display:flex; gap:8px; align-items:center; margin-top:10px; cursor:pointer; font-size:12px; }
+  body.desk .wrap { max-width:none; margin:0 0 0 220px; padding:24px 32px 40px; }
+  body.desk .hdr, body.desk .wrap > .track, body.desk .bnav, body.desk #moreSheet, body.desk #deskWrap { display:none !important; }
+  body.desk #listView, body.desk #pipeView { width:420px; }
+  body.desk #toolsView, body.desk #leadsView, body.desk #inqView, body.desk #todoView, body.desk #resView { max-width:760px; }
+  body.desk .toast { bottom:22px; left:220px; }
+  body.desk .sheet { bottom:auto; top:12vh; border-radius:18px; border-bottom:1px solid var(--box); max-width:480px; left:220px; }
+  body.desk .sheet:not(.open) { display:none; }
+  body.desk .foot { text-align:left; max-width:420px; margin-top:28px; }
+  /* list rows: compact; the open owner fills the right pane */
+  body.desk .li-row .act-row, body.desk .li-row .li-ask { display:none; }
+  body.desk .li { cursor:pointer; }
+  body.desk .li.open { background:var(--surface); border:0; border-radius:0; margin:0 -14px; padding:2px 14px 10px; box-shadow:inset 2px 0 var(--sage); }
+  body.desk .li.open .li-row { padding-top:12px; }
+  body.desk .li.open .li-panel { position:fixed; left:704px; top:0; right:0; bottom:0; z-index:20; overflow-y:auto; margin:0; border:0; border-left:1px solid var(--line);
+    background:var(--bg); padding:28px 36px 60px; }
+  body.desk .dk-head { display:block; margin-bottom:18px; }
+  .dk-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  .dk-eye { font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--sage); }
+  .dk-head h2 { margin:6px 0 4px; font:300 28px var(--body); color:var(--ink); }
+  .dk-meta { color:var(--muted); font-size:13.5px; } .dk-ask { margin-top:6px; font-size:14px; color:var(--muted); } .dk-ask b { color:var(--ink); font-weight:400; }
+  .dk-tags { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+  .dk-pill { font-size:11px; letter-spacing:.12em; text-transform:uppercase; border:1px solid var(--box); color:var(--sage); border-radius:10px; padding:4px 10px; white-space:nowrap; }
+  .dk-pill.hot { background:var(--sage-btn); color:#161514; border-color:var(--sage-btn); }
+  body.desk .dk-head .act-row { display:grid; margin-top:18px; grid-template-columns:repeat(3,1fr); gap:10px; }
+  body.desk .dk-head .act-row .mini { height:46px; font-size:12px; }
+  body.desk .li-panel .tools { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:0; align-items:start; }
+  body.desk .li-panel .acc { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:4px 16px 10px; }
+  body.desk .li-panel .acc-h { pointer-events:none; min-height:40px; } body.desk .li-panel .acc-h i::after { content:''; }
+  body.desk .li-panel .acc-b { display:block; }
+  body.desk .li-panel .btn-line[onclick^="toggle"] { display:none; }
+  body.desk .li-panel .pin-btn { max-width:240px; }
+  /* Home */
+  body.desk #homeView { max-width:1240px; }
+  .hm-h { margin:4px 0 22px; font:300 26px var(--body); letter-spacing:.02em; }
+  .hm-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:18px; }
+  .hm-t { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; } .hm-t[onclick] { cursor:pointer; } .hm-t[onclick]:hover { border-color:var(--box); }
+  .hm-t b { display:block; font:200 32px "Poppins",var(--body); color:var(--ink); } .hm-t span { font-size:10.5px; letter-spacing:.26em; text-transform:uppercase; color:var(--sage); }
+  .hm-cols { display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:16px; align-items:start; } .hm-stack { display:flex; flex-direction:column; gap:16px; }
+  .hp { background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .hp h3 { display:flex; justify-content:space-between; margin:0; padding:14px 18px; font-weight:400; font-size:10.5px; letter-spacing:.3em; text-transform:uppercase; color:var(--sage); border-bottom:1px solid var(--line); }
+  .hp h3 a { color:var(--muted); letter-spacing:.1em; cursor:pointer; } .hp h3 a:hover { color:var(--ink); }
+  .hp-r { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 18px; border-bottom:1px solid var(--line); cursor:pointer; }
+  .hp-r:last-child, .hp-td:last-child { border-bottom:0; } .hp-r:hover { background:#1b1915; }
+  .hp-r b { display:block; font-weight:400; font-size:14px; } .hp-r span { font-size:12px; color:var(--muted); }
+  .hp-b { flex:none; } .hp-b .mini { width:auto; min-width:96px; height:34px; padding:0 12px; font-size:10.5px; display:inline-flex; align-items:center; justify-content:center; }
+  .hp-b .mini.pri { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
+  .hp-td { display:flex; gap:12px; align-items:center; padding:10px 18px; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .hp-td .td-chk { flex:none; }
+  .hp-e { padding:14px 18px; color:var(--muted); font-size:13px; }
   .hdr-note { font-size:11.5px; color:var(--muted); margin-right:6px; }
   .toast .undo { margin-left:14px; min-height:34px; padding:0 14px; border-radius:10px; border:1px solid var(--sage); background:transparent; color:var(--sage); font:400 12px var(--body); letter-spacing:.1em; text-transform:uppercase; cursor:pointer; pointer-events:auto; }
   .st-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid var(--line); margin-top:6px; padding-top:4px; font-size:13px; color:var(--muted); }
@@ -561,6 +621,15 @@
   <button class="btn btn-solid" id="loginBtn" type="submit">Log In</button>
   <div id="loginMsg"></div>
 </form></div>
+<aside class="dnav" id="dnav">
+  <div class="dn-brand"><b>THE OASIS</b><span>OUTREACH ENGINE</span></div>
+  <a id="dHome" onclick="tab('home')">Home</a><a id="dList" onclick="tab('list')">Contacts</a><a id="dPipe" onclick="tab('pipe')">Pipeline</a>
+  <a id="dLeads" onclick="tab('leads')">Leads <i id="dLeadCount"></i></a><a id="dInq" onclick="tab('inq')">Inquiries</a><a id="dTodo" onclick="tab('todo')">To Do</a>
+  <a id="dTools" onclick="tab('tools')">Tools</a><a id="dRes" onclick="tab('res')">Results</a>
+  <div class="dn-foot"><div class="dn-sent"><span id="dSent">– / –</span><button class="icon-btn" onclick="loadAll(true)" title="Reload from the tracker" aria-label="Refresh">↻</button></div>
+    <div class="track"><i id="dCapBar"></i></div><div class="dn-note" id="dNote"></div>
+    <label class="dn-opt"><input type="checkbox" onchange="$('desktop').checked=this.checked;$('desktop').onchange()" id="dDeskWA"> WhatsApp Desktop app</label></div>
+</aside>
 <div class="wrap">
   <header class="hdr">
   <div class="logo">
@@ -582,6 +651,7 @@
 
 
 
+  <div id="homeView" style="display:none"></div>
   <div id="main" style="display:none"></div>
   <div id="listView">
     <div class="fbar">
@@ -871,10 +941,24 @@
   var skips = {}, current = null, pageSize = 20, mode = 'list', loaded = false;
   var STATUSES = ['DND', 'Sale', 'Handover', 'Not Selling', 'Sold'];
   var isPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  /* Desktop layout: side menu, Home dashboard, contacts in two panes (list + open owner). Phone and sheet sidebar unchanged. */
+  var isDesk = false;
+  function checkDesk() {
+    var d = !isPhone && window.innerWidth >= 1100;
+    if (d === isDesk) return; isDesk = d; document.body.classList.toggle('desk', d);
+    if (loaded) { if (d && (mode === 'list' || mode === 'pipe')) deskOpenFirst(); }
+  }
+  window.addEventListener('resize', function () { clearTimeout(checkDesk.t); checkDesk.t = setTimeout(checkDesk, 150); });
+  function deskOpenFirst() {
+    if (!isDesk) return;
+    var box = mode === 'pipe' ? $('pipeView') : $('list'); if (!box || box.querySelector('.li.open')) return;
+    var first = box.querySelector('.li'); if (first) toggle(first.id.replace('li_', ''));
+  }
   var desk = document.getElementById('desktop');
   if (isPhone) document.getElementById('deskWrap').style.display = 'none';
   try { desk.checked = localStorage.getItem('waDesktop') !== '0'; } catch (e) { desk.checked = true; }
-  desk.onchange = function () { try { localStorage.setItem('waDesktop', desk.checked ? '1' : '0'); } catch (e) {} };
+  desk.onchange = function () { try { localStorage.setItem('waDesktop', desk.checked ? '1' : '0'); } catch (e) {} $('dDeskWA').checked = desk.checked; };
+  document.getElementById('dDeskWA').checked = desk.checked;
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -920,6 +1004,7 @@
   }
 
   /* ---------- Load ---------- */
+  function hdrNoteSet(t) { $('hdrNote').textContent = t; $('dNote').textContent = t; }
   var DKEY = 'oasisData', PINS = [], shownN = [];
   function pinKey(g) { var a = g.rows[0]; return a.cl + '|' + a.u; }
   function isPinned(g) { return PINS.indexOf(pinKey(g)) !== -1; }
@@ -935,18 +1020,20 @@
     var F = d.fields;
     var openKey = (function () { var el = document.querySelector('#list .li.open'); if (!el) return ''; var g = groupById(el.id.replace('li_', '')); return g ? g.key : ''; })();
     O = d.owners.map(function (a) { var o = {}; for (var i = 0; i < F.length; i++) o[F[i]] = a[i]; return o; });
-    PINS = d.pins || []; T = d.tpl; stats = d.stats; sheetUrl = d.sheetUrl; VIEWS = d.views; loaded = true; current = null;
+    PINS = d.pins || []; T = d.tpl; stats = d.stats; sheetUrl = d.sheetUrl; VIEWS = d.views; var first = !loaded; loaded = true; current = null;
     buildGroups(); buildOptions(); updateStats();
     renderOne(); if (mode === 'pipe') drawPipeline(); if (mode === 'res') drawResults();
-    if (openKey) { var i = shownF.map(function (g) { return g.key; }).indexOf(openKey); if (i !== -1) redrawRow('f' + i, true); }
-    $('hdrNote').textContent = fromCache ? 'updating…' : '';
+    checkDesk(); if (first && isDesk) tab('home'); else if (isDesk && mode === 'home') drawHome();
+    if (openKey) { var i = shownF.map(function (g) { return g.key; }).indexOf(openKey);
+      if (i !== -1) { [].slice.call(document.querySelectorAll('#list .li.open')).forEach(function (o) { redrawRow(o.id.replace('li_', ''), false); }); redrawRow('f' + i, true); } }
+    hdrNoteSet(fromCache ? 'updating…' : '');
   }
   function loadAll(isRefresh, quiet) {
     var cached = null;
     if (!loaded) { try { cached = JSON.parse(localStorage.getItem(DKEY) || 'null'); } catch (e) {} }
     if (cached && cached.owners) { try { applyData(cached, true); } catch (e) { cached = null; } }
     if (!cached && !quiet && !(isRefresh && loaded)) { var msg = state(isRefresh ? 'Refreshing from the tracker…' : 'Loading owners…'); $('main').innerHTML = msg; $('list').innerHTML = msg; }
-    if (quiet || cached || (isRefresh && loaded)) $('hdrNote').textContent = 'updating…';
+    if (quiet || cached || (isRefresh && loaded)) hdrNoteSet('updating…');
     google.script.run.withSuccessHandler(function (d) {
       try {
         if (!d) throw new Error('The script returned nothing.');
@@ -955,7 +1042,7 @@
         setTimeout(function () { loadLeads(true); }, 800);   // New-leads badge
         if (isRefresh && !quiet) toast('✓ Refreshed: ' + G.length + ' units');
       } catch (err) { fail(err); }
-    }).withFailureHandler(function (e) { $('hdrNote').textContent = ''; if (!loaded) fail(e); else toast('Could not refresh: ' + (e.message || e)); }).getAll();
+    }).withFailureHandler(function (e) { hdrNoteSet(''); if (!loaded) fail(e); else toast('Could not refresh: ' + (e.message || e)); }).getAll();
   }
   function fail(e) { var h = state('<b>Something Went Wrong</b>' + esc(e.message || e)); $('main').innerHTML = h; $('list').innerHTML = h; }
 
@@ -1099,6 +1186,8 @@
     $('sToday').textContent = stats.sentToday + ' / ' + stats.cap + ' sent';
     $('sFollow').textContent = fd; $('sNew').textContent = nl;
     $('capBar').style.width = Math.min(100, stats.sentToday / stats.cap * 100) + '%';
+    $('dSent').innerHTML = 'Sent today <b>' + stats.sentToday + '</b> / ' + stats.cap; $('dCapBar').style.width = $('capBar').style.width;
+    if (isDesk && mode === 'home') drawHome();
   }
   function capped() { return stats.sentToday >= stats.cap; }
 
@@ -1441,6 +1530,8 @@
   /* ---------- Tabs ---------- */
   function tab(t) {
     mode = t; window.scrollTo(0, 0);
+    ['Home', 'List', 'Pipe', 'Leads', 'Inq', 'Todo', 'Tools', 'Res'].forEach(function (k) { $('d' + k).className = lc(k) === t ? 'on' : ''; });
+    $('homeView').style.display = t === 'home' ? '' : 'none';
     $('tMore').className = (t === 'todo' || t === 'res' || t === 'inq') ? 'on' : '';
     $('tInq').className = 'sheet-opt' + (t === 'inq' ? ' on' : ''); $('inqView').style.display = t === 'inq' ? '' : 'none';
     $('tList').className = t === 'list' ? 'on' : ''; $('tRes').className = 'sheet-opt' + (t === 'res' ? ' on' : '');
@@ -1453,11 +1544,64 @@
     $('pipeView').style.display = t === 'pipe' ? '' : 'none';
     $('listView').style.display = t === 'list' ? '' : 'none';
     $('resView').style.display = t === 'res' ? '' : 'none';
-    $('deskWrap').style.display = (t === 'res' || t === 'tools' || t === 'todo' || t === 'leads' || t === 'inq' || isPhone) ? 'none' : '';
+    $('deskWrap').style.display = (t === 'res' || t === 'tools' || t === 'todo' || t === 'leads' || t === 'inq' || t === 'home' || isPhone || isDesk) ? 'none' : '';
+    if (t === 'home') { drawHome(); return; }
     if (t === 'tools') { drawTools(); return; }
     if (t === 'todo') { loadTodos(); return; }
     if (t === 'leads') { loadLeads(); return; } if (t === 'inq') { loadInq(); return; }
     if (t === 'one') renderOne(); else if (t === 'list') drawList(); else if (t === 'pipe') drawPipeline(); else drawResults();
+  }
+
+  /* ---------- Home (desktop): today at a glance ---------- */
+  function openOwner(key) {
+    var g = G.filter(function (x) { return x.key === key; })[0]; if (!g) return;
+    if ($('q').value) { $('q').value = ''; }
+    tab('list');
+    var find = function () {
+      var lists = [['n', shownN], ['c', shownC], ['f', shownF]];
+      for (var i = 0; i < lists.length; i++) { var j = lists[i][1].indexOf(g); if (j !== -1) return lists[i][0] + j; }
+      return '';
+    };
+    var id = find();
+    if (!id) { $('q').value = g.rows[0].cl + ' ' + g.rows[0].u; drawList(); id = find(); }
+    if (id) { var cur = document.querySelector('#list .li.open'); if (cur && cur.id !== 'li_' + id) redrawRow(cur.id.replace('li_', ''), false); redrawRow(id, true);
+      var el = $('li_' + id); if (el) el.scrollIntoView({ block: 'center' }); }
+  }
+  function homeRow(g, btns) {
+    var a = g.rows[0];
+    return '<div class="hp-r" onclick="openOwner(\'' + esc(g.key).replace(/'/g, "\\'") + '\')"><div><b>' + esc(g.n) + '</b><span>' +
+      esc([a.cl + ' · Unit ' + a.u, g.st || ''].filter(Boolean).join(' · ')) + '</span></div>' + (btns || '') + '</div>';
+  }
+  function drawHome() {
+    if (!loaded) return;
+    if (LD === null && !drawHome.ld) { drawHome.ld = 1; loadLeads(true); }
+    if (INQ === null && !drawHome.iq) { drawHome.iq = 1; google.script.run.withSuccessHandler(function (l) { INQ = l || []; if (mode === 'home') drawHome(); }).getInquiries(); }
+    if (TODOS === null && !drawHome.td) { drawHome.td = 1; google.script.run.withSuccessHandler(function (l) { TODOS = l || []; if (mode === 'home') drawHome(); }).getTodos(); }
+    var cbs = G.filter(cbDue).sort(function (a, b) { return a.cb < b.cb ? -1 : 1; });
+    var leads = LD ? LD.leads.filter(function (l) { return l.st === 'New'; }) : null;
+    var inq = INQ ? INQ.filter(function (x) { return !x.d; }) : null;
+    var tds = TODOS ? TODOS.filter(function (x) { return !x.d; }) : null;
+    var pins = PINS.map(function (k) { return G.filter(function (g) { return pinKey(g) === k; })[0]; }).filter(Boolean);
+    var h0 = new Date().getHours(), hi = h0 < 12 ? 'Good morning' : h0 < 18 ? 'Good afternoon' : 'Good evening';
+    var tile = function (n, l, go) { return '<div class="hm-t"' + (go ? ' onclick="' + go + '"' : '') + '><b>' + n + '</b><span>' + l + '</span></div>'; };
+    var load = '<div class="hp-e">Loading…</div>';
+    var cbBtn = function (g) { return g.tel ? '<span class="hp-b"><a class="mini call" href="tel:+' + esc(g.tel) + '" onclick="event.stopPropagation()">Call</a></span>' : ''; };
+    $('homeView').innerHTML = '<h1 class="hm-h">' + hi + ', Baraa</h1>' +
+      '<div class="hm-tiles">' + tile(stats.sentToday + ' / ' + stats.cap, 'WhatsApp sent today') + tile(cbs.length, 'Call backs today', "tab('list')") +
+        tile(leads ? leads.length : '–', 'New leads', "tab('leads')") + tile(inq ? inq.length : '–', 'Open inquiries', "tab('inq')") + '</div>' +
+      '<div class="hm-cols"><div class="hp"><h3>Call back today<a onclick="tab(\'list\')">Contacts →</a></h3>' +
+        (cbs.length ? cbs.slice(0, 12).map(function (g) { return homeRow(g, cbBtn(g)); }).join('') : '<div class="hp-e">No call-backs due today.</div>') + '</div>' +
+      '<div class="hm-stack"><div class="hp"><h3>New leads<a onclick="tab(\'leads\')">All →</a></h3>' +
+        (!leads ? load : leads.length ? leads.slice(0, 6).map(function (l) { var i = LD.leads.indexOf(l);
+          return '<div class="hp-r" onclick="tab(\'leads\')"><div><b>' + esc(l.name || 'No name') + '</b><span>' + esc([l.src, l.details].filter(Boolean).join(' · ').slice(0, 80)) + '</span></div>' +
+            (l.wa ? '<span class="hp-b"><button class="mini pri" onclick="event.stopPropagation();leadWA(' + i + ')">WhatsApp</button></span>' : '') + '</div>'; }).join('') : '<div class="hp-e">No new leads.</div>') + '</div>' +
+        '<div class="hp"><h3>Pinned</h3>' + (pins.length ? pins.map(function (g) { return homeRow(g); }).join('') : '<div class="hp-e">Pin up to 5 owners from their card.</div>') + '</div></div>' +
+      '<div class="hm-stack"><div class="hp"><h3>Open inquiries<a onclick="tab(\'inq\')">All →</a></h3>' +
+        (!inq ? load : inq.length ? inq.slice(0, 6).map(function (x) {
+          return '<div class="hp-r" onclick="tab(\'inq\')"><div><b>' + esc(x.client || 'Client') + '</b><span>' + esc(x.req) + '</span></div><span class="hp-b"><button class="mini" onclick="event.stopPropagation();tab(\'inq\');inqMatch(\'' + esc(x.id) + '\')">Matches</button></span></div>'; }).join('') : '<div class="hp-e">No open inquiries.</div>') + '</div>' +
+        '<div class="hp"><h3>To do<a onclick="tab(\'todo\')">All →</a></h3>' +
+        (!tds ? load : tds.length ? tds.slice(0, 8).map(function (x) {
+          return '<div class="hp-td"><button class="td-chk" onclick="todoToggle(\'' + esc(x.id) + '\');drawHome()"></button><span>' + esc(x.t) + '</span></div>'; }).join('') : '<div class="hp-e">Nothing to do.</div>') + '</div></div></div>';
   }
 
   /* ---------- Inquiries: client requests, with matching villas from the bot search ---------- */
@@ -1566,7 +1710,8 @@
       .withFailureHandler(function (e) { if (!LD && !quiet) $('leadsView').innerHTML = state('<b>Not loaded</b>' + esc(e.message || e)); }).getLeads();
   }
   function leadBadge() {
-    var n = LD ? LD.leads.filter(function (l) { return l.st === 'New'; }).length : 0; $('leadCount').textContent = n ? n : '';
+    var n = LD ? LD.leads.filter(function (l) { return l.st === 'New'; }).length : 0; $('leadCount').textContent = n ? n : ''; $('dLeadCount').textContent = n ? n : '';
+    if (isDesk && mode === 'home') drawHome();
     try { if (navigator.setAppBadge) { if (n) navigator.setAppBadge(n).catch(function () {}); else if (navigator.clearAppBadge) navigator.clearAppBadge().catch(function () {}); } } catch (e) {}
   }
   function badgeOn() {
@@ -1894,7 +2039,8 @@
 
   /* ---------- Filters tab: every owner, filtered like the Villa Finder ---------- */
   var shownF = [];
-  function drawList() {
+  function drawList() { drawList_(); if (isDesk && mode === 'list') deskOpenFirst(); }
+  function drawList_() {
     if (!loaded) return;
     var f = getFilters(), n = activeCount(f), fb = $('fToggle');
     fb.textContent = n ? 'Filters · ' + n : 'Filters'; fb.className = 'fbtn' + (n ? ' on' : '');
@@ -1956,8 +2102,14 @@
       '<div class="li-panel">' + (open ? panelHtml(g, id) : '') + '</div></div>';
   }
   function panelHtml(g, id) {
-    var a = g.rows[0];
-    return (g.dnd ? '<div class="dnd-note"><b>DND</b> · This owner is tagged Do Not Disturb in your tracker.</div>' : '') +
+    var a = g.rows[0], many = g.rows.length > 1;
+    var head = '<div class="dk-head"><div class="dk-top"><div><div class="dk-eye">' + (many ? g.rows.length + ' villas' : esc(a.cl) + ' · Unit ' + esc(a.u)) + '</div>' +
+      '<h2>' + esc(g.n) + (g.dnd ? ' <span class="dnd">DND</span>' : '') + '</h2>' +
+      '<div class="dk-meta">' + (many ? esc(g.rows.map(function (o) { return o.cl + ' ' + o.u; }).join(' · ')) : esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · '))) + '</div>' +
+      (g.ask ? '<div class="dk-ask">Asking <b>' + esc(opAskTxt(g.ask, a.op) || askTxt(g.ask)) + '</b></div>' : '') + '</div>' +
+      '<div class="dk-tags">' + (g.st ? '<span class="dk-pill' + (/sale|distress/i.test(g.st) ? ' hot' : '') + '">' + esc(g.st) + '</span>' : '') + (g.pp ? '<span class="dk-pill">' + esc(g.pp) + '</span>' : '') + (isPinned(g) ? '<span class="dk-pill">📌 Pinned</span>' : '') + '</div></div>' +
+      (a.dev ? '<div class="li-spec">Owned by Emaar · not contacted</div>' : '<div class="act-row">' + mailMini(g, id) + callMini(g, id) + waMini(g, id) + '</div>') + '</div>';
+    return head + (g.dnd ? '<div class="dnd-note"><b>DND</b> · This owner is tagged Do Not Disturb in your tracker.</div>' : '') +
       (g.p2 ? '<div class="list-note" style="margin:10px 0 0;text-align:left">Second number +' + esc(g.p2) +
           ' · <a onclick="waSecond(\'' + id + '\')">WhatsApp</a> · <a href="tel:+' + esc(g.p2) + '">Call</a></div>' : '') +
       toolsHtml(g, id) +
@@ -2141,8 +2293,10 @@
         var other = o.id.replace('li_', ''); if (other !== id) redrawRow(other, false);
       });
     }
+    if (isDesk && !opening) return;                         // on desktop one owner always stays open in the right pane
     redrawRow(id, opening);
-    if (opening) { var n = $('li_' + id); if (n && n.getBoundingClientRect().top < 0) n.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    if (opening && !isDesk) { var n = $('li_' + id); if (n && n.getBoundingClientRect().top < 0) n.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    if (isDesk) { var pn = document.querySelector('#li_' + id + ' .li-panel'); if (pn) pn.scrollTop = 0; }
   }
 
   /* ---------- Pipeline tab ---------- */
@@ -2171,7 +2325,8 @@
   }
   function askNum(v) { var t = String(v || '').toUpperCase().replace(/AED|,|\s/g, ''), n = parseFloat(t); if (isNaN(n)) return 0; return /M/.test(t) || n < 1000 ? n * 1e6 : n; }
   function lastContact(g) { return [g.wdt, g.edt].filter(Boolean).sort().pop() || ''; }
-  function drawPipeline() {
+  function drawPipeline() { drawPipeline_(); if (isDesk && mode === 'pipe') deskOpenFirst(); }
+  function drawPipeline_() {
     if (!loaded) return;
     var counts = {}; STAGES.forEach(function (s) { counts[s] = 0; });
     G.forEach(function (g) { if (counts[g.pp] !== undefined) counts[g.pp]++; });
