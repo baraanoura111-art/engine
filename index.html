@@ -530,11 +530,26 @@
   body.desk { --lw:420px; }
   @media (max-width:1320px) { body.desk { --lw:340px; } }
   body.desk #listView, body.desk #pipeView { width:var(--lw); }
-  body.desk #toolsView, body.desk #leadsView, body.desk #inqView, body.desk #todoView, body.desk #resView { max-width:760px; }
+  body.desk #toolsView, body.desk #leadsView, body.desk #inqView, body.desk #todoView, body.desk #resView, body.desk #pipeView { max-width:none; }
+  body.desk .wrap { min-height:100vh; box-sizing:border-box; }
+  /* full-width pages: cards flow in columns */
+  body.desk #leadsView, body.desk #inqList, body.desk #tdList { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:14px; align-items:start; }
+  body.desk #leadsView > :not(.lead), body.desk #inqList > :not(.inq), body.desk #tdList > :not(.td-row) { grid-column:1 / -1; }
+  body.desk .lead, body.desk .inq { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:0; }
+  body.desk .inq.done { opacity:.7; }
+  body.desk #tdList { grid-template-columns:repeat(auto-fill, minmax(420px, 1fr)); gap:0 28px; }
+  body.desk .td-chk { width:22px; height:22px; } body.desk .td-x { min-width:34px; min-height:34px; font-size:18px; }
+  body.desk .inq-form { display:grid; grid-template-columns:1fr 1fr 2fr auto; gap:10px; align-items:end; }
+  body.desk .inq-form .inq-two { display:contents; } body.desk .inq-form textarea { min-height:44px; height:44px; resize:none; }
+  body.desk .inq-form .btn { margin:0 !important; width:auto; padding:0 22px; height:44px; }
+  body.desk #todoView > .tbox { max-width:760px; }
+  /* footer at the bottom of the side menu */
+  body.desk .wrap > .foot { position:fixed; left:0; bottom:14px; width:220px; box-sizing:border-box; padding:0 26px; margin:0; text-align:left; z-index:31; font-size:9.5px; letter-spacing:.2em; }
+  body.desk .wrap > .foot #who { font-size:11px; letter-spacing:.02em; margin-top:6px; white-space:nowrap; }
+  body.desk .dnav { padding-bottom:112px; }
   body.desk .toast { bottom:22px; left:220px; }
   body.desk .sheet { bottom:auto; top:12vh; border-radius:18px; border-bottom:1px solid var(--box); max-width:480px; left:220px; }
   body.desk .sheet:not(.open) { display:none; }
-  body.desk .foot { text-align:left; max-width:420px; margin-top:28px; }
   /* list rows: compact; the open owner fills the right pane */
   body.desk .li-row .act-row, body.desk .li-row .li-ask, body.desk .li-row .li-spec { display:none; }
   body.desk .li .li-t .li-name { font-size:17px; }
