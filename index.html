@@ -531,7 +531,10 @@
   body.desk .sheet:not(.open) { display:none; }
   body.desk .foot { text-align:left; max-width:420px; margin-top:28px; }
   /* list rows: compact; the open owner fills the right pane */
-  body.desk .li-row .act-row, body.desk .li-row .li-ask { display:none; }
+  body.desk .li-row .act-row, body.desk .li-row .li-ask, body.desk .li-row .li-spec { display:none; }
+  body.desk .li .li-t .li-name { font-size:17px; }
+  body.desk #list .li, body.desk #pipeView .li { padding-bottom:0 !important; }
+  body.desk .li .li-row { padding-bottom:12px; }
   /* contacts as cards */
   body.desk #list .li, body.desk #pipeView .li { cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:12px; margin:0 0 10px; padding:0 16px 2px; transition:border-color .15s, background .15s; }
   body.desk #list .li + .li, body.desk #pipeView .li + .li { border-top:1px solid var(--line); }
@@ -568,7 +571,15 @@
   body.desk .li-panel .chips2 { gap:8px; }
   body.desk .li-panel .list-note { margin:12px 0 0 !important; font-size:13px; }
   .li-panel .list-note a { color:var(--sage); cursor:pointer; text-decoration:none; }
-  body.desk .dk-head { padding-bottom:18px; margin-bottom:0; }
+  body.desk .dk-head { position:sticky; top:0; z-index:3; background:rgba(13,12,11,.97); margin:0 -36px; padding:26px 36px 18px; border-bottom:1px solid var(--line); }
+  body.desk .li.open .li-panel { padding-top:0 !important; }
+  .dk-tiles { display:none; } body.desk .dk-tiles { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:18px 0 16px; }
+  .dk-tiles div { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:11px 14px; min-width:0; }
+  .dk-tiles span { display:block; font-size:12px; color:var(--muted); } .dk-tiles b { display:block; margin-top:3px; font-weight:300; font-size:18px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dk-tiles .ask b { color:var(--sage); }
+  body.desk .dk-eye { letter-spacing:.06em; text-transform:none; font-size:14px; color:var(--muted); }
+  body.desk .dk-tags { flex-direction:row; align-items:center; } body.desk .dk-tags .dk-x { margin:0 0 0 4px; }
+  body.desk .li-panel .acc-h span { font-size:14.5px; letter-spacing:0; text-transform:none; color:var(--ink); font-weight:400; }
   body.desk .dk-tags { flex-direction:column; align-items:flex-end; }
   .dk-x { width:38px; height:38px; border-radius:50%; border:1px solid var(--box); background:transparent; color:var(--muted); font-size:20px; line-height:1; cursor:pointer; margin-bottom:6px; }
   .dk-x:hover { color:var(--ink); border-color:var(--sage); }
@@ -623,6 +634,18 @@
   .sl-bar .mini { width:auto; min-width:150px; height:44px; padding:0 14px; }
   .sl-bar .mini.pri { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
   .li-name .pin { margin-right:6px; font-size:12px; }
+  /* contact card: "Cluster - Villa N" first, owner second */
+  .li-t, .li-sub { display:flex; justify-content:space-between; align-items:center; gap:10px; min-width:0; }
+  .li-t .li-name { font-size:16px; min-width:0; }
+  .li-pills { display:flex; gap:5px; align-items:center; flex:none; }
+  .li-sub { margin-top:2px; font-size:13px; color:var(--muted); }
+  .li-own { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  .nx { flex:none; font-size:12.5px; color:var(--muted); white-space:nowrap; } .nx.due { color:var(--sage-btn); font-weight:400; } .nx.rep { color:#E3C98F; }
+  .pill { font-size:10px; letter-spacing:.08em; text-transform:uppercase; border-radius:9px; padding:2px 8px; border:1px solid var(--box); color:var(--muted); white-space:nowrap; }
+  .pill.hot { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; } .pill.dnd { border-color:#7a3b35; color:#E0A39B; background:rgba(122,59,53,.18); }
+  .pill.mute { color:#8d857a; border-color:#2f2b26; } .pill.soft { color:var(--sage); border-color:var(--box); }
+  .li-t .pin { font-size:12px; }
+  @media (max-width:340px) { .li-t .li-name { font-size:15px; } .li-pills .pill { font-size:9px; padding:1px 6px; } .li-sub { font-size:12px; } }
   @media (max-width:340px) { .inq-b { grid-template-columns:1fr 1fr; } .inq-b .mini.pri { grid-column:1 / -1; } .inq-two { grid-template-columns:1fr; } }
   .inq.done .inq-top b, .inq.done .inq-req { color:var(--muted); }
   @media (max-width:340px) { .act-row .mini, .act-row a.mini { font-size:9.5px; letter-spacing:.02em; padding:0 2px; } .mini .stp { margin-left:3px; padding:0 3px; font-size:9px; } .qchip { font-size:12px; } }
@@ -2107,15 +2130,16 @@
     var noteLine = (cbDue(g) || opt === 'pipe') && a.nt ? '<div class="li-spec">"' + esc(String(a.nt).split('\n')[0].slice(0, 90)) + '"</div>' : '';
     var nextLine = opt === 'pipe' ? '<div class="li-spec" style="color:var(--ink)">' +
       (g.cb ? (cbDue(g) ? 'Call back due' : 'Call back ' + dfmt(g.cb)) : 'No call-back set') + (g.rpt ? ' · ' + esc(g.rpt) : '') + '</div>' : '';
+    var nx = nextStep(g);
     return '<div class="li' + (g.dnd ? ' is-dnd' : '') + (open ? ' open' : '') + '" id="li_' + id + '">' +
       '<div class="li-row"><div class="li-main" onclick="toggle(\'' + id + '\')">' +
-        '<div class="li-name">' + (g.rows[0].dev ? '<span class="emaar">Emaar</span>' : '') + (g.dnd ? '<span class="dnd">DND</span>' : '') + (opt === 'pipe' && askNum(g.ask) > 0 ? '<span class="ask">Asking ' + esc(g.ask) + '</span>' : '') + esc(g.n) +
-          (isPinned(g) ? '<span class="pin" title="Pinned">📌</span>' : '') + (g.rp && !g.pp && opt !== 'pipe' ? '<span class="badge2">Replied</span>' : '') + cbTag(g) + (g.pp && opt !== 'pipe' ? '<span class="tag-st">' + esc(g.pp) + '</span>' : '') + '</div>' +
-        '<div class="li-meta">' + (g.wa === 'follow' ? '<span class="fu">' + (nextWA(g) === 3 ? 'Message 3' : 'Follow-up') + ' · </span>' : '') +
-          (many ? '<b style="font-weight:400;color:var(--ink)">' + g.rows.length + ' villas</b>' : esc(a.cl) + ' · <span class="unit-no">Unit ' + esc(a.u) + '</span>') +
-          (g.st ? ' · ' + esc(g.st) : '') + (g.siblings && g.siblings.length > 1 ? '<span class="owns">Owns ' + g.siblings.length + ' units</span>' : '') + '</div>' +
+        '<div class="li-t"><span class="li-name">' + esc(many ? g.rows.length + ' villas' : unitTitle(a)) + '</span><span class="li-pills">' +
+          (isPinned(g) ? '<span class="pin" title="Pinned">📌</span>' : '') + (a.dev ? '<span class="pill">Emaar</span>' : '') + (g.dnd ? '<span class="pill dnd">DND</span>' : '') +
+          (g.pp && opt !== 'pipe' ? '<span class="pill soft">' + esc(g.pp) + '</span>' : '') + (g.st ? '<span class="pill ' + stCls(g.st) + '">' + esc(g.st) + '</span>' : '') + '</span></div>' +
+        '<div class="li-sub"><span class="li-own">' + esc(g.n) + (!many && a.b ? ' · ' + esc(a.b) + ' BR' : '') + (g.siblings && g.siblings.length > 1 ? ' · owns ' + g.siblings.length : '') + '</span>' +
+          (nx[0] ? '<span class="nx ' + nx[1] + '">' + nx[0] + '</span>' : '') + '</div>' +
         (many ? unitsLine(g).replace('<b>' + g.rows.length + ' villas</b> · ', '')
-              : '<div class="li-spec">' + esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · ')) + '</div>') +
+              : '<div class="li-spec">' + esc([a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · ')) + '</div>') +
         (opt !== 'pipe' && (g.k === 'available' || askNum(g.ask) > 0 || opAsk(g.ask)) && g.ask ? '<div class="li-ask">Asking <b>' + esc(opAskTxt(g.ask, a.op) || askTxt(g.ask)) + '</b></div>' : '') +
         nextLine + noteLine +
       '</div>' +
@@ -2128,14 +2152,30 @@
       '</div>' +
       '<div class="li-panel">' + (open ? panelHtml(g, id) : '') + '</div></div>';
   }
+  function unitTitle(a) { return a.cl + ' - ' + (/lavita/i.test(a.cl) ? 'Mansion ' : 'Villa ') + a.u; }
+  function stCls(st) { st = lc(st); return /sale|distress/.test(st) ? 'hot' : /dnd/.test(st) ? 'dnd' : /not selling|sold/.test(st) ? 'mute' : 'soft'; }
+  function nextStep(g) {                     // [label, class] shown on the right of each contact card
+    if ((g.rows[0] || {}).dev) return ['', ''];
+    if (g.cb) { var d = daysAgo(g.cb); if (d > 0) return ['Call back · ' + d + 'd late', 'due']; if (d === 0) return ['Call back today', 'due']; return ['Call back ' + dfmt(g.cb), '']; }
+    if (g.rp) return ['Replied', 'rep'];
+    if (g.wa === 'follow') return ['WhatsApp ' + nextWA(g) + ' due', 'due'];
+    if (g.wa === 'new') return ['Not contacted', ''];
+    if (g.sp) return ['WhatsApp ' + g.sp + ' sent', ''];
+    if (g.es) return ['Email ' + g.es + ' sent', ''];
+    return ['', ''];
+  }
+  function aedM(v) { var n = Number(String(v == null ? '' : v).replace(/[^\d.]/g, '')); return n > 0 ? 'AED ' + (n >= 1e6 ? (Math.round(n / 1e4) / 100) + 'M' : n.toLocaleString('en-US')) : '—'; }
+  function sqft(v) { var n = Number(String(v == null ? '' : v).replace(/[^\d.]/g, '')); return n > 0 ? n.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' sqft' : '—'; }
   function panelHtml(g, id) {
     var a = g.rows[0], many = g.rows.length > 1;
-    var head = '<div class="dk-head"><div class="dk-top"><div><div class="dk-eye">' + (many ? g.rows.length + ' villas' : esc(a.cl) + ' · Unit ' + esc(a.u)) + '</div>' +
-      '<h2>' + esc(g.n) + (g.dnd ? ' <span class="dnd">DND</span>' : '') + '</h2>' +
-      '<div class="dk-meta">' + (many ? esc(g.rows.map(function (o) { return o.cl + ' ' + o.u; }).join(' · ')) : esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · '))) + '</div>' +
-      (g.ask ? '<div class="dk-ask">Asking <b>' + esc(opAskTxt(g.ask, a.op) || askTxt(g.ask)) + '</b></div>' : '') + '</div>' +
-      '<div class="dk-tags"><button class="dk-x" onclick="toggle(\'' + id + '\')" title="Close" aria-label="Close">×</button>' + (g.st ? '<span class="dk-pill' + (/sale|distress/i.test(g.st) ? ' hot' : '') + '">' + esc(g.st) + '</span>' : '') + (g.pp ? '<span class="dk-pill">' + esc(g.pp) + '</span>' : '') + (isPinned(g) ? '<span class="dk-pill">📌 Pinned</span>' : '') + '</div></div>' +
-      (a.dev ? '<div class="li-spec">Owned by Emaar · not contacted</div>' : '<div class="act-row">' + mailMini(g, id) + callMini(g, id) + waMini(g, id) + '</div>') + '</div>';
+    var head = '<div class="dk-head"><div class="dk-top"><div><div class="dk-eye">' + esc(g.n) + (g.siblings && g.siblings.length > 1 ? ' · owns ' + g.siblings.length + ' units' : '') + '</div>' +
+      '<h2>' + esc(many ? g.rows.length + ' villas' : unitTitle(a)) + '</h2>' +
+      '<div class="dk-meta">' + (many ? esc(g.rows.map(unitTitle).join(' · ')) : esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.o, a.vw].filter(Boolean).join(' · '))) + '</div></div>' +
+      '<div class="dk-tags">' + (g.dnd ? '<span class="pill dnd">DND</span>' : '') + (g.st ? '<span class="pill ' + stCls(g.st) + '">' + esc(g.st) + '</span>' : '') + (g.pp ? '<span class="pill soft">' + esc(g.pp) + '</span>' : '') +
+        '<button class="dk-x" onclick="toggle(\'' + id + '\')" title="Close" aria-label="Close">×</button></div></div>' +
+      (a.dev ? '<div class="li-spec">Owned by Emaar · not contacted</div>' : '<div class="act-row">' + mailMini(g, id) + callMini(g, id) + waMini(g, id) + '</div>') + '</div>' +
+      (many ? '' : '<div class="dk-tiles"><div class="ask"><span>Asking</span><b>' + esc(g.ask ? (opAskTxt(g.ask, a.op) || askTxt(g.ask)) : '—') + '</b></div>' +
+        '<div><span>Original price</span><b>' + aedM(a.op) + '</b></div><div><span>Plot</span><b>' + sqft(a.pl) + '</b></div><div><span>BUA</span><b>' + sqft(a.bua) + '</b></div></div>');
     return head + (g.dnd ? '<div class="dnd-note"><b>DND</b> · This owner is tagged Do Not Disturb in your tracker.</div>' : '') +
       (g.p2 ? '<div class="list-note" style="margin:10px 0 0;text-align:left">Second number +' + esc(g.p2) +
           ' · <a onclick="waSecond(\'' + id + '\')">WhatsApp</a> · <a href="tel:+' + esc(g.p2) + '">Call</a></div>' : '') +
