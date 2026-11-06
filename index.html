@@ -512,7 +512,7 @@
   /* ===== Desktop (≥1100px, not phones) ===== */
   .dnav, .dk-head, #homeView:empty { display:none; }
   body.desk .dnav { display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; width:220px; z-index:30; background:#0f0e0c; border-right:1px solid var(--line); padding:26px 0 20px; }
-  .dn-brand { padding:0 26px 26px; color:var(--sage); } .dn-brand b { display:block; font:200 25px "Poppins",var(--body); letter-spacing:.04em; } .dn-brand span { font-size:10px; letter-spacing:.38em; }
+  .dn-brand { width:150px; padding:4px 0 26px 22px; color:var(--sage); text-align:center; } .dn-brand .logo svg { width:150px; } .dn-brand span { display:block; margin-top:12px; padding-left:.42em; font-size:10.5px; letter-spacing:.42em; color:var(--muted); }
   .dn-tiles { display:flex; flex-direction:column; gap:4px; padding:0 14px; }
   .dnav a { position:relative; display:flex; align-items:center; gap:12px; height:42px; padding:0 12px; border-radius:10px; border:1px solid transparent;
     color:var(--muted); font-size:14px; cursor:pointer; transition:background .15s, color .15s; }
@@ -675,8 +675,7 @@
 </head>
 <body>
 <div id="login"><form onsubmit="return appLogin(event)">
-<div class="logo">
-    <svg viewBox="0 0 360 160" role="img" aria-label="The Oasis Specialist">
+<div class="logo"><svg viewBox="0 0 360 160" role="img" aria-label="The Oasis Specialist">
       <text x="180" y="30" text-anchor="middle" class="lg-small">THE</text>
       <text x="74" y="118" text-anchor="middle" class="lg-big">O</text>
       <path d="M121 118 L148 67 L175 118" class="lg-a"/>
@@ -685,8 +684,7 @@
       <text x="255" y="118" text-anchor="middle" class="lg-big">I</text>
       <text x="295" y="118" text-anchor="middle" class="lg-big">S</text>
       <text x="180" y="152" text-anchor="middle" class="lg-small">SPECIALIST</text>
-    </svg>
-  </div>
+    </svg></div>
   <div class="eye">Owner Outreach</div>
   <div id="loginUsers"></div>
   <input id="loginPin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN">
@@ -694,7 +692,16 @@
   <div id="loginMsg"></div>
 </form></div>
 <aside class="dnav" id="dnav">
-  <div class="dn-brand"><b>THE OASIS</b><span>OUTREACH ENGINE</span></div>
+  <div class="dn-brand"><div class="logo"><svg viewBox="0 0 360 160" role="img" aria-label="The Oasis Specialist">
+      <text x="180" y="30" text-anchor="middle" class="lg-small">THE</text>
+      <text x="74" y="118" text-anchor="middle" class="lg-big">O</text>
+      <path d="M121 118 L148 67 L175 118" class="lg-a"/>
+      <path d="M102 104 C 120 101, 134 97, 148 93 C 164 89, 180 84, 198 79 C 180 86, 164 92, 148 96 C 134 100, 118 103, 102 104 Z" class="lg-swoosh"/>
+      <text x="213" y="118" text-anchor="middle" class="lg-big">S</text>
+      <text x="255" y="118" text-anchor="middle" class="lg-big">I</text>
+      <text x="295" y="118" text-anchor="middle" class="lg-big">S</text>
+      <text x="180" y="152" text-anchor="middle" class="lg-small">SPECIALIST</text>
+    </svg></div><span>ENGINE</span></div>
   <div class="dn-tiles"><a id="dHome" onclick="tab('home')"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/></svg><span>Home</span></a><a id="dList" onclick="tab('list')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-3.8 3.9-6 7.5-6s6.7 2.2 7.5 6"/></svg><span>Contacts</span></a><a id="dPipe" onclick="tab('pipe')"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>Pipeline</span></a><a id="dLeads" onclick="tab('leads')"><svg viewBox="0 0 24 24"><path d="M3.5 13.5 6 5.5h12l2.5 8v5h-17z"/><path d="M3.5 13.5h5l1.3 2.2h4.4l1.3-2.2h5"/></svg><span>Leads</span><i id="dLeadCount"></i></a><a id="dInq" onclick="tab('inq')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><span>Inquiries</span></a><a id="dTodo" onclick="tab('todo')"><svg viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="3"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><span>To Do</span></a><a id="dTools" onclick="tab('tools')"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg><span>Tools</span></a><a id="dRes" onclick="tab('res')"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg><span>Results</span></a></div>
   <div class="dn-foot"><div class="dn-sent"><span id="dSent">– / –</span><button class="icon-btn" onclick="loadAll(true)" title="Reload from the tracker" aria-label="Refresh">↻</button></div>
     <div class="track"><i id="dCapBar"></i></div><div class="dn-note" id="dNote"></div>
