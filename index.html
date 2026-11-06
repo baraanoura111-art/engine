@@ -570,6 +570,12 @@
   .li-panel .list-note a { color:var(--sage); cursor:pointer; text-decoration:none; }
   body.desk .dk-head { padding-bottom:18px; margin-bottom:0; }
   body.desk .dk-tags { flex-direction:column; align-items:flex-end; }
+  .dk-x { width:38px; height:38px; border-radius:50%; border:1px solid var(--box); background:transparent; color:var(--muted); font-size:20px; line-height:1; cursor:pointer; margin-bottom:6px; }
+  .dk-x:hover { color:var(--ink); border-color:var(--sage); }
+  #dkEmpty { display:none; }
+  body.desk.m-two #dkEmpty { display:flex; position:fixed; left:calc(284px + var(--lw)); top:0; right:0; bottom:0; align-items:center; justify-content:center; border-left:1px solid var(--line); color:var(--muted); text-align:center; z-index:1; }
+  body.desk.m-two:has(.li.open) #dkEmpty { display:none; }
+  #dkEmpty b { display:block; font-weight:300; font-size:20px; color:var(--ink); margin-bottom:6px; } #dkEmpty span { font-size:13.5px; }
   body.desk .li-panel .btn-line[onclick^="toggle"] { display:none; }
   body.desk .li-panel .pin-btn { max-width:240px; }
   /* Home */
@@ -651,6 +657,7 @@
     <div class="track"><i id="dCapBar"></i></div><div class="dn-note" id="dNote"></div>
     <label class="dn-opt"><input type="checkbox" onchange="$('desktop').checked=this.checked;$('desktop').onchange()" id="dDeskWA"> WhatsApp Desktop app</label></div>
 </aside>
+<div id="dkEmpty"><div><b>Select an owner</b><span>Click a name on the left to open their card here.</span></div></div>
 <div class="wrap">
   <header class="hdr">
   <div class="logo">
@@ -967,7 +974,6 @@
   function checkDesk() {
     var d = !isPhone && window.innerWidth >= 1100;
     if (d === isDesk) return; isDesk = d; document.body.classList.toggle('desk', d);
-    if (loaded) { if (d && (mode === 'list' || mode === 'pipe')) deskOpenFirst(); }
   }
   window.addEventListener('resize', function () { clearTimeout(checkDesk.t); checkDesk.t = setTimeout(checkDesk, 150); });
   function deskOpenFirst() {
@@ -1550,7 +1556,7 @@
 
   /* ---------- Tabs ---------- */
   function tab(t) {
-    mode = t; window.scrollTo(0, 0);
+    mode = t; window.scrollTo(0, 0); document.body.classList.toggle('m-two', t === 'list' || t === 'pipe');
     ['Home', 'List', 'Pipe', 'Leads', 'Inq', 'Todo', 'Tools', 'Res'].forEach(function (k) { $('d' + k).className = lc(k) === t ? 'on' : ''; });
     $('homeView').style.display = t === 'home' ? '' : 'none';
     $('tMore').className = (t === 'todo' || t === 'res' || t === 'inq') ? 'on' : '';
@@ -2060,7 +2066,7 @@
 
   /* ---------- Filters tab: every owner, filtered like the Villa Finder ---------- */
   var shownF = [];
-  function drawList() { drawList_(); if (isDesk && mode === 'list') deskOpenFirst(); }
+  function drawList() { drawList_(); }
   function drawList_() {
     if (!loaded) return;
     var f = getFilters(), n = activeCount(f), fb = $('fToggle');
@@ -2128,7 +2134,7 @@
       '<h2>' + esc(g.n) + (g.dnd ? ' <span class="dnd">DND</span>' : '') + '</h2>' +
       '<div class="dk-meta">' + (many ? esc(g.rows.map(function (o) { return o.cl + ' ' + o.u; }).join(' · ')) : esc([a.b ? a.b + ' BR' : '', a.sy, a.po, a.pl !== '' ? 'Plot ' + Number(a.pl).toLocaleString('en-US') : '', a.o, a.vw].filter(Boolean).join(' · '))) + '</div>' +
       (g.ask ? '<div class="dk-ask">Asking <b>' + esc(opAskTxt(g.ask, a.op) || askTxt(g.ask)) + '</b></div>' : '') + '</div>' +
-      '<div class="dk-tags">' + (g.st ? '<span class="dk-pill' + (/sale|distress/i.test(g.st) ? ' hot' : '') + '">' + esc(g.st) + '</span>' : '') + (g.pp ? '<span class="dk-pill">' + esc(g.pp) + '</span>' : '') + (isPinned(g) ? '<span class="dk-pill">📌 Pinned</span>' : '') + '</div></div>' +
+      '<div class="dk-tags"><button class="dk-x" onclick="toggle(\'' + id + '\')" title="Close" aria-label="Close">×</button>' + (g.st ? '<span class="dk-pill' + (/sale|distress/i.test(g.st) ? ' hot' : '') + '">' + esc(g.st) + '</span>' : '') + (g.pp ? '<span class="dk-pill">' + esc(g.pp) + '</span>' : '') + (isPinned(g) ? '<span class="dk-pill">📌 Pinned</span>' : '') + '</div></div>' +
       (a.dev ? '<div class="li-spec">Owned by Emaar · not contacted</div>' : '<div class="act-row">' + mailMini(g, id) + callMini(g, id) + waMini(g, id) + '</div>') + '</div>';
     return head + (g.dnd ? '<div class="dnd-note"><b>DND</b> · This owner is tagged Do Not Disturb in your tracker.</div>' : '') +
       (g.p2 ? '<div class="list-note" style="margin:10px 0 0;text-align:left">Second number +' + esc(g.p2) +
@@ -2314,7 +2320,6 @@
         var other = o.id.replace('li_', ''); if (other !== id) redrawRow(other, false);
       });
     }
-    if (isDesk && !opening) return;                         // on desktop one owner always stays open in the right pane
     redrawRow(id, opening);
     if (opening && !isDesk) { var n = $('li_' + id); if (n && n.getBoundingClientRect().top < 0) n.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
     if (isDesk) { var pn = document.querySelector('#li_' + id + ' .li-panel'); if (pn) pn.scrollTop = 0; }
@@ -2346,7 +2351,7 @@
   }
   function askNum(v) { var t = String(v || '').toUpperCase().replace(/AED|,|\s/g, ''), n = parseFloat(t); if (isNaN(n)) return 0; return /M/.test(t) || n < 1000 ? n * 1e6 : n; }
   function lastContact(g) { return [g.wdt, g.edt].filter(Boolean).sort().pop() || ''; }
-  function drawPipeline() { drawPipeline_(); if (isDesk && mode === 'pipe') deskOpenFirst(); }
+  function drawPipeline() { drawPipeline_(); }
   function drawPipeline_() {
     if (!loaded) return;
     var counts = {}; STAGES.forEach(function (s) { counts[s] = 0; });
