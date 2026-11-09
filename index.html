@@ -523,6 +523,7 @@
   .dnav a i { margin-left:auto; font-style:normal; background:var(--sage-btn); color:#161514; border-radius:9px; font-size:11px; padding:0 7px; } .dnav a i:empty { display:none; }
   .dn-foot { margin-top:auto; padding:0 22px 0 26px; font-size:12.5px; color:var(--muted); }
   .dn-sent { display:flex; justify-content:space-between; align-items:center; } .dn-sent b { color:var(--ink); font-weight:400; }
+  .wrap > .track, .dn-foot .track { display:none !important; }
   .dn-foot .track { margin:8px 0 6px; } .dn-note { min-height:16px; font-size:11.5px; }
   .dn-opt { display:flex; gap:8px; align-items:center; margin-top:10px; cursor:pointer; font-size:12px; }
   body.desk .wrap { max-width:none; margin:0 0 0 220px; padding:24px 32px 40px; }
@@ -1282,13 +1283,13 @@
   function updateStats() {
     var nl = 0, fd = 0;
     G.forEach(function (g) { if (g.wa === 'new') nl++; else if (g.wa === 'follow') fd++; });
-    $('sToday').textContent = stats.sentToday + ' / ' + stats.cap + ' sent';
+    $('sToday').textContent = stats.sentToday + ' sent today';
     $('sFollow').textContent = fd; $('sNew').textContent = nl;
-    $('capBar').style.width = Math.min(100, stats.sentToday / stats.cap * 100) + '%';
-    $('dSent').innerHTML = 'Sent today <b>' + stats.sentToday + '</b> / ' + stats.cap; $('dCapBar').style.width = $('capBar').style.width;
+    $('capBar').style.width = '0%';
+    $('dSent').innerHTML = 'Sent today <b>' + stats.sentToday + '</b>'; $('dCapBar').style.width = $('capBar').style.width;
     if (isDesk && mode === 'home') drawHome();
   }
-  function capped() { return stats.sentToday >= stats.cap; }
+  function capped() { return false; }        // no daily WhatsApp limit
 
   /* ---------- Actions (instant on screen, saved in the background) ---------- */
   function doWhatsApp(g, text, n) {
@@ -1713,7 +1714,7 @@
     var cbBody = cbs.length ? cbs.slice(0, 8).map(function (g) { return homeRow(g, cbBtn(g)); }).join('') : empty('No call-backs due today.');
     var pinBody = pins.length ? pins.map(function (g) { return homeRow(g); }).join('') : empty('Open an owner and press Pin to Top.');
     $('homeView').innerHTML = '<div class="hm-top"><div><div class="hm-d">' + dstr + '</div><h1 class="hm-h">' + hi + ', Baraa</h1></div></div>' +
-      '<div class="hm-stats">' + stat(stats.sentToday + '<i>/ ' + stats.cap + '</i>', 'WhatsApp sent today') + stat(cbs.length, 'Call-backs today', "tab('list')", cbs.length) +
+      '<div class="hm-stats">' + stat(stats.sentToday, 'WhatsApp sent today') + stat(cbs.length, 'Call-backs today', "tab('list')", cbs.length) +
         stat(leads ? leads.length : '–', 'New leads', "tab('leads')", leads && leads.length) + stat(inq ? inq.length : '–', 'Open inquiries', "tab('inq')", inq && inq.length) +
         stat(tds ? tds.length : '–', 'Tasks to do', "tab('todo')") + '</div>' +
       '<div class="hm-grid"><div class="hm-col">' + panel('To do', tds && tds.length, "tab('todo')", todoBody) + panel('Call back today', cbs.length, "tab('list')", cbBody) + '</div>' +
