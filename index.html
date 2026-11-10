@@ -1458,10 +1458,8 @@
   /* ---------- List tab: everyone still to message, follow-ups first ---------- */
   var shownQ = [], qSize = 20;
   function queue() {
-    var f = [], n = [];
-    // Follow-ups due on top, then every owner in tracker order. Contacted owners stay in the list.
-    G.forEach(function (g) { if (skips[g.key]) return; if (g.wa === 'follow') f.push(g); else n.push(g); });
-    return f.concat(n);
+    // Every owner in tracker order (cluster, then villa). Pinned and call-backs due are shown above.
+    return G.filter(function (g) { return !skips[g.key]; }).sort(function (a, b) { return a.rows[0].r - b.rows[0].r; });
   }
   var shownC = [];
   function renderOne() { drawList(); }     // the old List tab is now part of Cold Contacts
