@@ -1938,9 +1938,7 @@
     }
     var L = r.listing, k = function (l, v) { return v ? '<span><i>' + l + '</i>' + esc(v) + '</span>' : ''; };
     var n = function (x) { return x ? Math.round(x).toLocaleString('en-US') + ' sqft' : ''; };
-    var h = '<div class="uf-read"><div class="uf-h">From the listing' + (r.portal ? ' · ' + esc(r.portal) : '') + '</div><div class="uf-kv">' +
-      k('Cluster', L.clusters.join(', ') || 'Not found') + k('Beds', L.beds) + k('Plot', n(L.plot)) + k('BUA', n(L.bua)) + k('Other sizes', L.areas.map(n).join(', ')) +
-      k('Style', L.style) + k('Position', L.position) + k('View', L.view) + k('Facing', L.facing) + k('Price', L.price ? 'AED ' + L.price.toLocaleString('en-US') : '') + '</div></div>';
+    var h = '';
     if (!r.candidates.length) h += state('<b>No match</b>No unit in the tracker fits these details.');
     var card = function (c, i) {
       var g = G.concat(GD).filter(function (x) { return x.rows.some(function (o) { return o.cl === c.cl && String(o.u) === String(c.u); }); })[0];
@@ -1951,7 +1949,7 @@
     };
     if (r.candidates.length) {
       var hi = r.candidates.filter(function (c) { return c.conf >= 80; }), lo = r.candidates.filter(function (c) { return c.conf < 80; });
-      h += '<div class="uf-h" style="margin-top:18px">Likely unit' + (hi.length === 1 ? '' : 's') + ' · 80% or more</div>' +
+      h += '<div class="uf-h">Likely unit' + (hi.length === 1 ? '' : 's') + ' · 80% or more</div>' +
         (hi.length ? hi.map(function (c) { return card(c, 0); }).join('') : '<div class="list-note" style="text-align:left">No unit matches 80% or more. Check the other candidates below.</div>');
       if (lo.length) h += '<button class="uf-more" onclick="var b=this.nextElementSibling;b.hidden=!b.hidden;this.classList.toggle(\'open\')"><span>Other candidates · ' + lo.length + '</span><i>›</i></button>' +
         '<div hidden>' + lo.map(function (c) { return card(c, 1); }).join('') + '</div>';
