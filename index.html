@@ -818,7 +818,7 @@
     <div id="ufPane" style="display:none">
       <div class="tbox uf-box"><textarea id="ufIn" rows="2" placeholder="Paste a Property Finder or Bayut listing link, or the listing text" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ufRun()}"></textarea>
         <button class="btn btn-solid" onclick="ufRun()">Find Unit</button></div>
-      <div id="ufOut"></div><div id="ufBm"></div><div id="ufHist"></div>
+      <div id="ufOut"></div><div id="ufBm"></div>
     </div>
     <div id="docsPane" style="display:none"></div>
     <div id="linksPane" style="display:none"></div>
@@ -1915,7 +1915,7 @@
   /* ---------- Tools: Documents and Links ---------- */
   function toolPane(p) {
     [].forEach.call($('toolSeg').children, function (b, i) { b.className = ['bot', 'docs', 'links', 'uf'][i] === p ? 'on' : ''; });
-    $('ufPane').style.display = p === 'uf' ? '' : 'none'; if (p === 'uf') { ufHistory(); $('ufBm').innerHTML = isPhone ? '' : ufBookmark(); }
+    $('ufPane').style.display = p === 'uf' ? '' : 'none'; if (p === 'uf') { $('ufBm').innerHTML = isPhone ? '' : ufBookmark(); }
     $('botPane').style.display = p === 'bot' ? '' : 'none';
     $('docsPane').style.display = p === 'docs' ? '' : 'none';
     $('linksPane').style.display = p === 'links' ? '' : 'none';
@@ -1926,7 +1926,7 @@
   function ufRun() {
     var v = $('ufIn').value.trim(); if (!v) { toast('Paste a listing link or text'); return; }
     $('ufOut').innerHTML = state(/^https?:/i.test(v) ? 'Opening the listing and checking the tracker…' : 'Checking the tracker…');
-    google.script.run.withSuccessHandler(function (r) { UF = r; ufDraw(); ufHistory(); })
+    google.script.run.withSuccessHandler(function (r) { UF = r; ufDraw(); })
       .withFailureHandler(function (e) { $('ufOut').innerHTML = state('<b>Not done</b>' + esc(e.message || e)); }).findUnit(v);
   }
   function ufDraw() {
