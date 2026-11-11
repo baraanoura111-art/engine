@@ -684,6 +684,7 @@
   .uf-cs { font-size:12.5px; color:var(--muted); margin-top:3px; }
   .uf-w { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:12px; } .uf-w .ok { color:var(--sage); } .uf-w .no { color:#C9908A; }
   .uf-b .mini { background:transparent !important; color:var(--ink) !important; border:1px solid var(--box) !important; }
+  .uf-bb { display:flex; gap:8px; } .uf-b a.uf-wa { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; background:var(--sage-btn) !important; color:#161514 !important; border-color:var(--sage-btn) !important; }
   .uf-b { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; font-size:13px; color:var(--muted); } .uf-b .mini { width:auto; min-width:120px; height:36px; padding:0 12px; }
   .uf-r { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); } .uf-r b { font-weight:400; font-size:14px; display:block; } .uf-r span { font-size:12px; color:var(--muted); } .uf-r a { color:var(--sage); font-size:12.5px; white-space:nowrap; }
   body.desk #ufPane { max-width:900px; }
@@ -1945,7 +1946,9 @@
       return '<div class="uf-c' + (i === 0 ? ' best' : '') + '"><div class="uf-ct"><b>' + esc(c.title) + '</b><span class="uf-p">' + c.conf + '%</span></div>' +
         '<div class="uf-cs">' + esc([c.beds ? c.beds + ' BR' : '', c.style, c.pos, c.view, c.orient, c.plot ? 'Plot ' + Math.round(c.plot).toLocaleString('en-US') : '', c.bua ? 'BUA ' + Math.round(c.bua).toLocaleString('en-US') : ''].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="uf-w">' + c.why.map(function (w) { return '<span class="ok">✓ ' + esc(w) + '</span>'; }).join('') + c.miss.map(function (w) { return '<span class="no">✗ ' + esc(w) + '</span>'; }).join('') + '</div>' +
-        (g ? '<div class="uf-b"><span>' + esc(g.n) + '</span><button class="mini" onclick="openOwner(\'' + esc(g.key).replace(/'/g, "\\'") + '\')">Open Owner</button></div>' : '') + '</div>';
+        (g || c.wa ? '<div class="uf-b"><span>' + esc(g ? g.n : c.owner) + '</span><span class="uf-bb">' +
+          (c.wa ? '<a class="mini uf-wa" href="' + esc(waUrl(c.wa, '')) + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+          (g ? '<button class="mini" onclick="openOwner(\'' + esc(g.key).replace(/'/g, "\\'") + '\')">Open Owner</button>' : '') + '</span></div>' : '') + '</div>';
     };
     if (r.candidates.length) {
       var hi = r.candidates.filter(function (c) { return c.conf >= 80; }), lo = r.candidates.filter(function (c) { return c.conf < 80; });
