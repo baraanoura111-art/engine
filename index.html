@@ -672,6 +672,8 @@
   .uf-warn { margin-top:14px; padding:12px 14px; border:1px solid #7a3b35; border-radius:12px; font-size:13.5px; color:var(--ink); background:rgba(122,59,53,.12); }
   .uf-h { font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:var(--sage); margin:16px 0 8px; }
   .uf-kv { display:flex; flex-wrap:wrap; gap:6px; } .uf-kv span { border:1px solid var(--box); border-radius:10px; padding:5px 10px; font-size:13px; } .uf-kv i { font-style:normal; color:var(--muted); margin-right:6px; }
+  .uf-more { display:flex; justify-content:space-between; align-items:center; width:100%; min-height:46px; margin:6px 0 8px; padding:0 14px; background:transparent; border:1px solid var(--box); border-radius:12px; color:var(--ink); font:inherit; font-size:14px; cursor:pointer; }
+  .uf-more i { font-style:normal; color:var(--muted); transition:transform .15s; } .uf-more.open i { transform:rotate(90deg); }
   .uf-c { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; } .uf-c.best { border-color:var(--sage); }
   .uf-ct { display:flex; justify-content:space-between; align-items:center; } .uf-ct b { font-weight:400; font-size:16px; }
   .uf-p { font-size:13px; color:#161514; background:var(--sage-btn); border-radius:9px; padding:1px 8px; } .uf-c:not(.best) .uf-p { background:transparent; color:var(--sage); border:1px solid var(--box); }
@@ -1935,13 +1937,20 @@
       k('Cluster', L.clusters.join(', ') || 'Not found') + k('Beds', L.beds) + k('Plot', n(L.plot)) + k('BUA', n(L.bua)) + k('Other sizes', L.areas.map(n).join(', ')) +
       k('Style', L.style) + k('Position', L.position) + k('View', L.view) + k('Facing', L.facing) + k('Price', L.price ? 'AED ' + L.price.toLocaleString('en-US') : '') + '</div></div>';
     if (!r.candidates.length) h += state('<b>No match</b>No unit in the tracker fits these details.');
-    else h += '<div class="uf-h" style="margin-top:18px">Likely unit' + (r.candidates.length > 1 ? 's' : '') + '</div>' + r.candidates.map(function (c, i) {
+    var card = function (c, i) {
       var g = G.concat(GD).filter(function (x) { return x.rows.some(function (o) { return o.cl === c.cl && String(o.u) === String(c.u); }); })[0];
       return '<div class="uf-c' + (i === 0 ? ' best' : '') + '"><div class="uf-ct"><b>' + esc(c.title) + '</b><span class="uf-p">' + c.conf + '%</span></div>' +
         '<div class="uf-cs">' + esc([c.beds ? c.beds + ' BR' : '', c.style, c.pos, c.view, c.orient, c.plot ? 'Plot ' + Math.round(c.plot).toLocaleString('en-US') : '', c.bua ? 'BUA ' + Math.round(c.bua).toLocaleString('en-US') : ''].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="uf-w">' + c.why.map(function (w) { return '<span class="ok">✓ ' + esc(w) + '</span>'; }).join('') + c.miss.map(function (w) { return '<span class="no">✗ ' + esc(w) + '</span>'; }).join('') + '</div>' +
         (g ? '<div class="uf-b"><span>' + esc(g.n) + '</span><button class="mini" onclick="openOwner(\'' + esc(g.key).replace(/'/g, "\\'") + '\')">Open Owner</button></div>' : '') + '</div>';
-    }).join('');
+    };
+    if (r.candidates.length) {
+      var hi = r.candidates.filter(function (c) { return c.conf >= 80; }), lo = r.candidates.filter(function (c) { return c.conf < 80; });
+      h += '<div class="uf-h" style="margin-top:18px">Likely unit' + (hi.length === 1 ? '' : 's') + ' · 80% or more</div>' +
+        (hi.length ? hi.map(function (c) { return card(c, 0); }).join('') : '<div class="list-note" style="text-align:left">No unit matches 80% or more. Check the other candidates below.</div>');
+      if (lo.length) h += '<button class="uf-more" onclick="var b=this.nextElementSibling;b.hidden=!b.hidden;this.classList.toggle(\'open\')"><span>Other candidates · ' + lo.length + '</span><i>›</i></button>' +
+        '<div hidden>' + lo.map(function (c) { return card(c, 1); }).join('') + '</div>';
+    }
     if (r.note) h += '<div class="list-note" style="text-align:left">' + esc(r.note) + '</div>';
     h += '<div class="list-note" style="text-align:left">' + (r.logged ? '✓ Saved to the Unit Number Finder tab.' : 'Not saved to the tracker' + (r.logError ? ': ' + esc(r.logError) : '.')) + '</div>';
     $('ufOut').innerHTML = h;
