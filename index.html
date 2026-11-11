@@ -668,6 +668,19 @@
   .inq-b .mini.off { color:var(--muted); }
   .inq-b .mini.pri { background:var(--sage-btn); border-color:var(--sage-btn); color:#161514; }
   .inq-res { margin-top:10px; }
+  .uf-box { display:flex; gap:8px; align-items:flex-start; } .uf-box textarea { flex:1; min-height:48px; } .uf-box .btn { width:auto; margin:0; padding:0 18px; height:48px; flex:none; }
+  .uf-warn { margin-top:14px; padding:12px 14px; border:1px solid #7a3b35; border-radius:12px; font-size:13.5px; color:var(--ink); background:rgba(122,59,53,.12); }
+  .uf-h { font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:var(--sage); margin:16px 0 8px; }
+  .uf-kv { display:flex; flex-wrap:wrap; gap:6px; } .uf-kv span { border:1px solid var(--box); border-radius:10px; padding:5px 10px; font-size:13px; } .uf-kv i { font-style:normal; color:var(--muted); margin-right:6px; }
+  .uf-c { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; } .uf-c.best { border-color:var(--sage); }
+  .uf-ct { display:flex; justify-content:space-between; align-items:center; } .uf-ct b { font-weight:400; font-size:16px; }
+  .uf-p { font-size:13px; color:#161514; background:var(--sage-btn); border-radius:9px; padding:1px 8px; } .uf-c:not(.best) .uf-p { background:transparent; color:var(--sage); border:1px solid var(--box); }
+  .uf-cs { font-size:12.5px; color:var(--muted); margin-top:3px; }
+  .uf-w { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:12px; } .uf-w .ok { color:var(--sage); } .uf-w .no { color:#C9908A; }
+  .uf-b .mini { background:transparent !important; color:var(--ink) !important; border:1px solid var(--box) !important; }
+  .uf-b { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; font-size:13px; color:var(--muted); } .uf-b .mini { width:auto; min-width:120px; height:36px; padding:0 12px; }
+  .uf-r { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); } .uf-r b { font-weight:400; font-size:14px; display:block; } .uf-r span { font-size:12px; color:var(--muted); } .uf-r a { color:var(--sage); font-size:12.5px; white-space:nowrap; }
+  body.desk #ufPane { max-width:900px; }
   .sr-pick { display:flex; align-items:center; gap:10px; min-height:40px; font-size:12px; letter-spacing:.08em; color:var(--sage); cursor:pointer; }
   .sr-pick input { width:20px; height:20px; accent-color:var(--sage-btn); }
   .sl-bar { position:sticky; bottom:calc(76px + env(safe-area-inset-bottom)); z-index:3; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; padding:10px 12px; background:var(--surface); border:1px solid var(--sage); border-radius:12px; font-size:13px; color:var(--ink); }
@@ -795,7 +808,13 @@
   </div>
   <div id="leadsView" style="display:none"><div class="state">Loading…</div></div>
   <div id="toolsView" style="display:none">
-    <div class="seg" id="toolSeg"><button class="on" onclick="toolPane('bot')">Bot</button><button onclick="toolPane('docs')">Documents</button><button onclick="toolPane('links')">Links</button></div>
+    <div class="seg" id="toolSeg"><button class="on" onclick="toolPane('bot')">Bot</button><button onclick="toolPane('docs')">Documents</button><button onclick="toolPane('links')">Links</button><button onclick="toolPane('uf')">Unit Finder</button></div>
+    <div id="ufPane" style="display:none">
+      <div class="tbox uf-box"><textarea id="ufIn" rows="2" placeholder="Paste a Property Finder or Bayut listing link, or the listing text" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ufRun()}"></textarea>
+        <button class="btn btn-solid" onclick="ufRun()">Find Unit</button></div>
+      <div class="list-note" style="text-align:left;margin:8px 0 0">Reads the cluster, beds, plot, BUA, style, position and view, then checks them against the tracker. Every search is saved in the <b>Unit Number Finder</b> tab.</div>
+      <div id="ufOut"></div><div id="ufHist"></div>
+    </div>
     <div id="docsPane" style="display:none"></div>
     <div id="linksPane" style="display:none"></div>
     <div id="botPane">
@@ -1889,11 +1908,52 @@
 
   /* ---------- Tools: Documents and Links ---------- */
   function toolPane(p) {
-    [].forEach.call($('toolSeg').children, function (b, i) { b.className = ['bot', 'docs', 'links'][i] === p ? 'on' : ''; });
+    [].forEach.call($('toolSeg').children, function (b, i) { b.className = ['bot', 'docs', 'links', 'uf'][i] === p ? 'on' : ''; });
+    $('ufPane').style.display = p === 'uf' ? '' : 'none'; if (p === 'uf') ufHistory();
     $('botPane').style.display = p === 'bot' ? '' : 'none';
     $('docsPane').style.display = p === 'docs' ? '' : 'none';
     $('linksPane').style.display = p === 'links' ? '' : 'none';
     if (p === 'docs') loadDocs(); if (p === 'links') loadLinks(); if (p === 'bot') setTimeout(tGrow, 0);
+  }
+  /* ---------- Unit Number Finder ---------- */
+  var UF = null;
+  function ufRun() {
+    var v = $('ufIn').value.trim(); if (!v) { toast('Paste a listing link or text'); return; }
+    $('ufOut').innerHTML = state(/^https?:/i.test(v) ? 'Opening the listing and checking the tracker…' : 'Checking the tracker…');
+    google.script.run.withSuccessHandler(function (r) { UF = r; ufDraw(); ufHistory(); })
+      .withFailureHandler(function (e) { $('ufOut').innerHTML = state('<b>Not done</b>' + esc(e.message || e)); }).findUnit(v);
+  }
+  function ufDraw() {
+    var r = UF; if (!r) return;
+    if (r.needText) {
+      $('ufOut').innerHTML = '<div class="uf-warn"><b>Couldn\'t open that page.</b> ' + esc(r.error || '') + '<br>Open the listing, select all the text (Ctrl+A, then Ctrl+C), paste it into the box above and press Find Unit.</div>';
+      $('ufIn').value = ''; $('ufIn').focus(); return;
+    }
+    var L = r.listing, k = function (l, v) { return v ? '<span><i>' + l + '</i>' + esc(v) + '</span>' : ''; };
+    var n = function (x) { return x ? Math.round(x).toLocaleString('en-US') + ' sqft' : ''; };
+    var h = '<div class="uf-read"><div class="uf-h">From the listing' + (r.portal ? ' · ' + esc(r.portal) : '') + '</div><div class="uf-kv">' +
+      k('Cluster', L.clusters.join(', ') || 'Not found') + k('Beds', L.beds) + k('Plot', n(L.plot)) + k('BUA', n(L.bua)) + k('Other sizes', L.areas.map(n).join(', ')) +
+      k('Style', L.style) + k('Position', L.position) + k('View', L.view) + k('Facing', L.facing) + k('Price', L.price ? 'AED ' + L.price.toLocaleString('en-US') : '') + '</div></div>';
+    if (!r.candidates.length) h += state('<b>No match</b>No unit in the tracker fits these details.');
+    else h += '<div class="uf-h" style="margin-top:18px">Likely unit' + (r.candidates.length > 1 ? 's' : '') + '</div>' + r.candidates.map(function (c, i) {
+      var g = G.concat(GD).filter(function (x) { return x.rows.some(function (o) { return o.cl === c.cl && String(o.u) === String(c.u); }); })[0];
+      return '<div class="uf-c' + (i === 0 ? ' best' : '') + '"><div class="uf-ct"><b>' + esc(c.title) + '</b><span class="uf-p">' + c.conf + '%</span></div>' +
+        '<div class="uf-cs">' + esc([c.beds ? c.beds + ' BR' : '', c.style, c.pos, c.view, c.orient, c.plot ? 'Plot ' + Math.round(c.plot).toLocaleString('en-US') : '', c.bua ? 'BUA ' + Math.round(c.bua).toLocaleString('en-US') : ''].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="uf-w">' + c.why.map(function (w) { return '<span class="ok">✓ ' + esc(w) + '</span>'; }).join('') + c.miss.map(function (w) { return '<span class="no">✗ ' + esc(w) + '</span>'; }).join('') + '</div>' +
+        (g ? '<div class="uf-b"><span>' + esc(g.n) + '</span><button class="mini" onclick="openOwner(\'' + esc(g.key).replace(/'/g, "\\'") + '\')">Open Owner</button></div>' : '') + '</div>';
+    }).join('');
+    if (r.note) h += '<div class="list-note" style="text-align:left">' + esc(r.note) + '</div>';
+    h += '<div class="list-note" style="text-align:left">' + (r.logged ? '✓ Saved to the Unit Number Finder tab.' : 'Not saved to the tracker' + (r.logError ? ': ' + esc(r.logError) : '.')) + '</div>';
+    $('ufOut').innerHTML = h;
+  }
+  function ufHistory() {
+    google.script.run.withSuccessHandler(function (l) {
+      if (!l || !l.length) { $('ufHist').innerHTML = ''; return; }
+      $('ufHist').innerHTML = '<div class="uf-h" style="margin-top:26px">Recent searches</div>' + l.slice(0, 10).map(function (x) {
+        return '<div class="uf-r"><div><b>' + esc(x.best) + (x.conf ? ' · ' + esc(x.conf) : '') + '</b><span>' + esc([x.date, x.portal, x.cluster, x.beds ? x.beds + ' BR' : ''].filter(Boolean).join(' · ')) + '</span></div>' +
+          (/^https?:/.test(x.url) ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">Listing ↗</a>' : '') + '</div>';
+      }).join('');
+    }).getFinds();
   }
   var DOCS = null, docFiles = {};
   function loadDocs() {

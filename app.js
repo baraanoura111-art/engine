@@ -6,7 +6,7 @@
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || mem[k] || ''; if (v === null) { localStorage.removeItem(k); delete mem[k]; } else { localStorage.setItem(k, v); mem[k] = v; } } catch (e) { if (v === undefined) return mem[k] || ''; if (v === null) delete mem[k]; else mem[k] = v; } }
 
   // Read-only actions are retried if the phone drops the connection (e.g. the app was switched away).
-  var READS = { getAll: 1, botTicket: 1, getValuationData: 1, getLeads: 1, getTodos: 1, getInquiries: 1, getLinks: 1, getDocs: 1 }, listFailed = false;
+  var READS = { getAll: 1, botTicket: 1, getValuationData: 1, getLeads: 1, getTodos: 1, getInquiries: 1, getLinks: 1, getDocs: 1, getFinds: 1 }, listFailed = false;
   // Saves that are safe to repeat: retried on a bad connection, and kept on the phone to sync later if still offline.
   var SAFE = { logWhatsAppRows: 1, logEmailRows: 1, logInvalidRows: 1, setStatusRows: 1, setReplyRows: 1, setNote: 1, setCallBackRows: 1,
                setPipelineRows: 1, setAskingRows: 1, setFieldsRows: 1, setTodoDone: 1, setLeadStatus: 1, setInquiryDone: 1, deleteTodo: 1, deleteInquiry: 1 };
