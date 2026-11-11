@@ -1915,7 +1915,7 @@
   /* ---------- Tools: Documents and Links ---------- */
   function toolPane(p) {
     [].forEach.call($('toolSeg').children, function (b, i) { b.className = ['bot', 'docs', 'links', 'uf'][i] === p ? 'on' : ''; });
-    $('ufPane').style.display = p === 'uf' ? '' : 'none'; if (p === 'uf') { $('ufBm').innerHTML = isPhone ? '' : ufBookmark(); }
+    $('ufPane').style.display = p === 'uf' ? '' : 'none'; 
     $('botPane').style.display = p === 'bot' ? '' : 'none';
     $('docsPane').style.display = p === 'docs' ? '' : 'none';
     $('linksPane').style.display = p === 'links' ? '' : 'none';
@@ -1933,7 +1933,7 @@
     var r = UF; if (!r) return;
     if (r.needText) {
       $('ufOut').innerHTML = '<div class="uf-warn"><b>' + esc(r.portal || 'The portal') + ' blocks the engine from opening its pages.</b><br>' +
-        'Easiest: use the <b>Find Unit</b> bookmark below while you\'re on the listing.<br>Or open the listing, select all the text (Ctrl+A, then Ctrl+C), paste it into the box above and press Find Unit.</div>' + ufBookmark();
+        'On the laptop, use the <b>Find Unit</b> button from the Chrome extension on the listing page.<br>Or open the listing, select all the text, paste it into the box above and press Find Unit.</div>';
       $('ufIn').value = ''; $('ufIn').focus(); return;
     }
     var L = r.listing, k = function (l, v) { return v ? '<span><i>' + l + '</i>' + esc(v) + '</span>' : ''; };
